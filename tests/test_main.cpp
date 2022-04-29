@@ -210,6 +210,13 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			SceneTree::get_singleton()->initialize();
 			return;
 		}
+
+		if (name.find("[AudioStreamSample]") != -1) {
+			AudioDriverManager::initialize(0);
+			AudioServer *audio_server = memnew(AudioServer);
+			audio_server->init();
+			return;
+		}
 	}
 
 	void test_case_end(const doctest::CurrentTestCaseStats &) override {
@@ -271,6 +278,11 @@ struct GodotTestCaseListener : public doctest::IReporter {
 		if (MessageQueue::get_singleton()) {
 			MessageQueue::get_singleton()->flush();
 			memdelete(MessageQueue::get_singleton());
+		}
+
+		if (AudioServer::get_singleton()) {
+			AudioServer::get_singleton()->finish();
+			memdelete(AudioServer::get_singleton());
 		}
 	}
 
