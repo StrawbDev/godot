@@ -212,7 +212,8 @@ struct GodotTestCaseListener : public doctest::IReporter {
 		}
 
 		if (name.find("[AudioStreamSample]") != -1) {
-			AudioDriverManager::initialize(0);
+			int dummy_idx = AudioDriverManager::get_driver_count() - 1;
+			AudioDriverManager::initialize(dummy_idx);
 			AudioServer *audio_server = memnew(AudioServer);
 			audio_server->init();
 			return;
