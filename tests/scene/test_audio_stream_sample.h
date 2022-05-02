@@ -129,8 +129,8 @@ void run_test(String file_name, AudioStreamSample::Format data_format, bool ster
 		REQUIRE(stream->save_to_wav(save_path) == OK);
 
 		Error error;
-		Ref<FileAccess> wav_file = FileAccess::open(save_path, FileAccess::ModeFlags::READ, &error);
-		REQUIRE(error == OK);
+		Ref<FileAccess> wav_file = FileAccess::open(save_path, FileAccess::READ, &error);
+		CHECK(error == OK);
 	}
 }
 
@@ -152,6 +152,32 @@ TEST_CASE("[AudioStreamSample] Stereo PCM16 format") {
 
 TEST_CASE("[AudioStreamSample] Alternate mix rate") {
 	run_test("test_pcm16_stereo_38000Hz.wav", AudioStreamSample::FORMAT_16_BITS, true, 38000, 38000 * 3);
+}
+
+TEST_CASE("[AudioStreamSample] save_to_wav() adds file extension automatically") {
+	String save_path = OS::get_singleton()->get_cache_path().plus_file("test_wav_extension");
+	Vector<uint8_t> test_data = gen_pcm8_test(SAMPLE_RATE, SAMPLE_COUNT, false);
+	Ref<AudioStreamSample> stream = memnew(AudioStreamSample);
+	stream->set_data(test_data);
+
+	REQUIRE(stream->save_to_wav(save_path) == OK);
+	Error error;
+	Ref<FileAccess> wav_file = FileAccess::open(save_path + ".wav", FileAccess::READ, &error);
+	CHECK(error == OK);
+}
+
+TEST_CASE("[AudioStreamSample] Default values") {
+	Ref<AudioStreamSample> stream = memnew(AudioStreamSample);
+	CHECK(stream->get_format() == AudioStreamSample::FORMAT_8_BITS);
+	CHECK(stream->get_loop_mode() == AudioStreamSample::LOOP_DISABLED);
+	CHECK(stream->get_loop_begin() == 0);
+	CHECK(stream->get_loop_end() == 0);
+	CHECK(stream->get_mix_rate() == 44100);
+	CHECK(stream->is_stereo() == false);
+	CHECK(stream->get_length() == 0);
+	CHECK(stream->is_monophonic() == false);
+	CHECK(stream->get_data() == Vector<uint8_t>{});
+	CHECK(stream->get_stream_name() == "");
 }
 
 } // namespace TestAudioStreamSample
