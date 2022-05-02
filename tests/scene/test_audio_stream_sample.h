@@ -110,9 +110,16 @@ void run_test(String file_name, AudioStreamSample::Format data_format, bool ster
 
 	Ref<AudioStreamSample> stream = memnew(AudioStreamSample);
 	stream->set_mix_rate(sample_rate);
+	CHECK(stream->get_mix_rate() == sample_rate);
+
 	stream->set_format(data_format);
+	CHECK(stream->get_format() == data_format);
+
 	stream->set_stereo(stereo);
+	CHECK(stream->is_stereo() == stereo);
+
 	stream->set_data(test_data);
+	CHECK(stream->get_data() == test_data);
 
 	SUBCASE("Stream length is computed properly") {
 		CHECK(Math::is_equal_approx(stream->get_length(), sample_count / sample_rate));
