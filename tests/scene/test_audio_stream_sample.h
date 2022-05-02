@@ -184,6 +184,15 @@ TEST_CASE("[AudioStreamSample] Save empty file") {
 	run_test("test_empty.wav", AudioStreamSample::FORMAT_8_BITS, false, SAMPLE_RATE, 0);
 }
 
+TEST_CASE("[AudioStreamSample] Saving IMA ADPCM is not supported") {
+	String save_path = OS::get_singleton()->get_cache_path().plus_file("test_adpcm.wav");
+	Ref<AudioStreamSample> stream = memnew(AudioStreamSample);
+	stream->set_format(AudioStreamSample::FORMAT_IMA_ADPCM);
+	ERR_PRINT_OFF;
+	CHECK(stream->save_to_wav(save_path) == ERR_UNAVAILABLE);
+	ERR_PRINT_ON;
+}
+
 } // namespace TestAudioStreamSample
 
 #endif // TEST_AUDIO_STREAM_SAMPLE_H
