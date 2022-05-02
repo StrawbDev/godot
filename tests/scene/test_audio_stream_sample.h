@@ -180,6 +180,10 @@ TEST_CASE("[AudioStreamSample] Default values") {
 	CHECK(stream->get_stream_name() == "");
 }
 
+TEST_CASE("[AudioStreamSample] Save empty file") {
+	run_test("test_empty.wav", AudioStreamSample::FORMAT_8_BITS, false, SAMPLE_RATE, 0);
+}
+
 } // namespace TestAudioStreamSample
 
 #endif // TEST_AUDIO_STREAM_SAMPLE_H
