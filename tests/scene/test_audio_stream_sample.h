@@ -98,23 +98,24 @@ Vector<uint8_t> gen_pcm16_test(float sample_rate, int sample_count, bool stereo)
 	return buffer;
 }
 
-void run_test(String file_name, AudioStreamSample::Format data_format, bool stereo) {
+void run_test(String file_name, AudioStreamSample::Format data_format, bool stereo, float sample_rate, float sample_count) {
 	String save_path = OS::get_singleton()->get_cache_path().plus_file(file_name);
 
 	Vector<uint8_t> test_data;
 	if (data_format == AudioStreamSample::FORMAT_8_BITS) {
-		test_data = gen_pcm8_test(SAMPLE_RATE, SAMPLE_COUNT, stereo);
+		test_data = gen_pcm8_test(sample_rate, sample_count, stereo);
 	} else {
-		test_data = gen_pcm16_test(SAMPLE_RATE, SAMPLE_COUNT, stereo);
+		test_data = gen_pcm16_test(sample_rate, sample_count, stereo);
 	}
 
 	Ref<AudioStreamSample> stream = memnew(AudioStreamSample);
+	stream->set_mix_rate(sample_rate);
 	stream->set_format(data_format);
 	stream->set_stereo(stereo);
 	stream->set_data(test_data);
 
 	SUBCASE("Stream length is computed properly") {
-		CHECK(Math::is_equal_approx(stream->get_length(), 3));
+		CHECK(Math::is_equal_approx(stream->get_length(), sample_count / sample_rate));
 	}
 
 	SUBCASE("Stream can be saved as .wav") {
@@ -127,19 +128,23 @@ void run_test(String file_name, AudioStreamSample::Format data_format, bool ster
 }
 
 TEST_CASE("[AudioStreamSample] Mono PCM8 format") {
-	run_test("test_pcm8_mono.wav", AudioStreamSample::FORMAT_8_BITS, false);
+	run_test("test_pcm8_mono.wav", AudioStreamSample::FORMAT_8_BITS, false, SAMPLE_RATE, SAMPLE_COUNT);
 }
 
 TEST_CASE("[AudioStreamSample] Mono PCM16 format") {
-	run_test("test_pcm16_mono.wav", AudioStreamSample::FORMAT_16_BITS, false);
+	run_test("test_pcm16_mono.wav", AudioStreamSample::FORMAT_16_BITS, false, SAMPLE_RATE, SAMPLE_COUNT);
 }
 
 TEST_CASE("[AudioStreamSample] Stereo PCM8 format") {
-	run_test("test_pcm8_stereo.wav", AudioStreamSample::FORMAT_8_BITS, true);
+	run_test("test_pcm8_stereo.wav", AudioStreamSample::FORMAT_8_BITS, true, SAMPLE_RATE, SAMPLE_COUNT);
 }
 
 TEST_CASE("[AudioStreamSample] Stereo PCM16 format") {
-	run_test("test_pcm16_stereo.wav", AudioStreamSample::FORMAT_16_BITS, true);
+	run_test("test_pcm16_stereo.wav", AudioStreamSample::FORMAT_16_BITS, true, SAMPLE_RATE, SAMPLE_COUNT);
+}
+
+TEST_CASE("[AudioStreamSample] Alternate mix rate") {
+	run_test("test_pcm16_stereo_38000Hz.wav", AudioStreamSample::FORMAT_16_BITS, true, 38000, 38000 * 3);
 }
 
 } // namespace TestAudioStreamSample
