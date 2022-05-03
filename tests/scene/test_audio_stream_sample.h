@@ -38,6 +38,11 @@
 #include "servers/audio/audio_driver_dummy.h"
 #include "tests/test_macros.h"
 
+#if TOOLS_ENABLED
+#include "core/io/resource_loader.h"
+#include "editor/import/resource_importer_wav.h"
+#endif
+
 namespace TestAudioStreamSample {
 
 // Default sample rate for test cases.
@@ -130,7 +135,36 @@ void run_test(String file_name, AudioStreamSample::Format data_format, bool ster
 
 		Error error;
 		Ref<FileAccess> wav_file = FileAccess::open(save_path, FileAccess::READ, &error);
-		CHECK(error == OK);
+		REQUIRE(error == OK);
+
+#if TOOLS_ENABLED
+		// The WAV importer can be used if enabled to check that the saved file is valid.
+		Ref<ResourceImporterWAV> wav_importer = memnew(ResourceImporterWAV);
+
+		List<ResourceImporter::ImportOption> options_list;
+		wav_importer->get_import_options("", &options_list);
+
+		Map<StringName, Variant> options_map;
+		for (List<ResourceImporter::ImportOption>::Element *e = options_list.front(); e; e = e->next()) {
+			options_map[e->get().option.name] = e->get().default_value;
+		}
+
+		REQUIRE(wav_importer->import(save_path, save_path, options_map, nullptr) == OK);
+
+		String load_path = save_path + "." + wav_importer->get_save_extension();
+		Ref<AudioStreamSample> loaded_stream = ResourceLoader::load(load_path, "AudioStreamSample", ResourceFormatImporter::CACHE_MODE_IGNORE, &error);
+		REQUIRE(error == OK);
+
+		CHECK(loaded_stream->get_format() == stream->get_format());
+		CHECK(loaded_stream->get_loop_mode() == stream->get_loop_mode());
+		CHECK(loaded_stream->get_loop_begin() == stream->get_loop_begin());
+		CHECK(loaded_stream->get_loop_end() == stream->get_loop_end());
+		CHECK(loaded_stream->get_mix_rate() == stream->get_mix_rate());
+		CHECK(loaded_stream->is_stereo() == stream->is_stereo());
+		CHECK(loaded_stream->get_length() == stream->get_length());
+		CHECK(loaded_stream->is_monophonic() == stream->is_monophonic());
+		CHECK(loaded_stream->get_data() == stream->get_data());
+#endif
 	}
 }
 
