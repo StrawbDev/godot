@@ -47,17 +47,22 @@ namespace TestAudioStreamSample {
 
 // Default sample rate for test cases.
 constexpr float SAMPLE_RATE = 44100;
-// Default sample count for test cases, 3 seconds of audio.
-constexpr int SAMPLE_COUNT = SAMPLE_RATE * 3;
+/* Default sample count for test cases. 1 second of audio is used so that the file can be listened
+to manually if needed. */
+constexpr int SAMPLE_COUNT = SAMPLE_RATE;
 
 float gen_sample(float frequency, float sample_rate, int sample_number) {
 	// formula for generating a sin wave with given frequency.
 	return Math::sin((Math_TAU * frequency / sample_rate) * sample_number);
 }
 
+/* Generates a 440Hz sin wave in channel 0 (mono channel or left stereo channel) and a 261.63Hz wave
+in channel 1 (right stereo channel). These waves correspond to the music notes
+A4 and C4 respectively.*/
 Vector<uint8_t> gen_pcm8_test(float sample_rate, int sample_count, bool stereo) {
 	Vector<uint8_t> buffer;
 	buffer.resize(stereo ? sample_count * 2 : sample_count);
+
 	uint8_t *write_ptr = buffer.ptrw();
 	for (int i = 0; i < buffer.size(); i++) {
 		float sample;
@@ -70,18 +75,22 @@ Vector<uint8_t> gen_pcm8_test(float sample_rate, int sample_count, bool stereo) 
 		} else {
 			sample = gen_sample(440, sample_rate, i);
 		}
+
 		// Map sin wave to full range of 8-bit values.
 		uint8_t sample_8bit = Math::fast_ftoi(((sample + 1) / 2) * UINT8_MAX);
 		// Unlike the .wav format, AudioStreamSample expects signed 8-bit samples.
 		uint8_t sample_8bit_signed = sample_8bit - (INT8_MAX + 1);
 		write_ptr[i] = sample_8bit_signed;
 	}
+
 	return buffer;
 }
 
+// Same as gen_pcm8_test but with 16-bit samples.
 Vector<uint8_t> gen_pcm16_test(float sample_rate, int sample_count, bool stereo) {
 	Vector<uint8_t> buffer;
 	buffer.resize(stereo ? sample_count * 4 : sample_count * 2);
+
 	uint8_t *write_ptr = buffer.ptrw();
 	for (int i = 0; i < buffer.size() / 2; i++) {
 		float sample;
@@ -94,12 +103,14 @@ Vector<uint8_t> gen_pcm16_test(float sample_rate, int sample_count, bool stereo)
 		} else {
 			sample = gen_sample(440, sample_rate, i);
 		}
+
 		// Map sin wave to full range of 16-bit values.
 		uint16_t sample_16bit = Math::fast_ftoi(((sample + 1) / 2) * UINT16_MAX);
 		// The .wav format expects samples larger than 8 bits to be signed.
 		uint16_t sample_16bit_signed = sample_16bit - (INT16_MAX + 1);
 		encode_uint16(sample_16bit_signed, write_ptr + (i * 2));
 	}
+
 	return buffer;
 }
 
@@ -185,10 +196,10 @@ TEST_CASE("[AudioStreamSample] Stereo PCM16 format") {
 }
 
 TEST_CASE("[AudioStreamSample] Alternate mix rate") {
-	run_test("test_pcm16_stereo_38000Hz.wav", AudioStreamSample::FORMAT_16_BITS, true, 38000, 38000 * 3);
+	run_test("test_pcm16_stereo_38000Hz.wav", AudioStreamSample::FORMAT_16_BITS, true, 38000, 38000);
 }
 
-TEST_CASE("[AudioStreamSample] save_to_wav() adds file extension automatically") {
+TEST_CASE("[AudioStreamSample] save_to_wav() adds '.wav' file extension automatically") {
 	String save_path = OS::get_singleton()->get_cache_path().plus_file("test_wav_extension");
 	Vector<uint8_t> test_data = gen_pcm8_test(SAMPLE_RATE, SAMPLE_COUNT, false);
 	Ref<AudioStreamSample> stream = memnew(AudioStreamSample);
