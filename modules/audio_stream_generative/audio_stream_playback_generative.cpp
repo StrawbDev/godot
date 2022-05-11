@@ -4,7 +4,9 @@ void AudioStreamPlaybackGenerative::set_resource(Ref<AudioStreamGenerative> reso
 	m_resource = resource;
 	ERR_FAIL_COND(m_resource.is_null());
 	if (m_resource.is_valid()) {
-		m_test_playback = m_resource->get_test_stream()->instance_playback();
+		if (m_resource->get_test_stream().is_valid()) {
+			m_test_playback = m_resource->get_test_stream()->instance_playback();
+		}
 	}
 }
 
