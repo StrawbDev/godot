@@ -1,9 +1,9 @@
 #include "modules/audio_stream_generative/editor/audio_stream_generative_editor_plugin.h"
+#include "editor/editor_scale.h"
 
 AudioStreamGenerativeEditorPlugin::AudioStreamGenerativeEditorPlugin() {
-	Label *label = memnew(Label);
-	label->set_text("Hello World!");
-	m_editor = label;
+	m_editor = memnew(AudioStreamGenerativeEditor);
+	m_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
 	m_bottom_button = add_control_to_bottom_panel(m_editor, TTR("AudioStreamGenerative"));
 	m_bottom_button->hide();
 }
@@ -22,4 +22,10 @@ void AudioStreamGenerativeEditorPlugin::make_visible(bool p_visible) {
 		}
 		m_bottom_button->hide();
 	}
+}
+
+void AudioStreamGenerativeEditorPlugin::edit(Object *p_object) {
+	AudioStreamGenerative *resource = Object::cast_to<AudioStreamGenerative>(p_object);
+	ERR_FAIL_COND(resource == nullptr);
+	m_editor->edit(resource);
 }
