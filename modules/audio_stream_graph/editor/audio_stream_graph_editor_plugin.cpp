@@ -1,18 +1,18 @@
-#include "modules/audio_stream_generative/editor/audio_stream_generative_editor_plugin.h"
+#include "audio_stream_graph_editor_plugin.h"
 #include "editor/editor_scale.h"
 
-AudioStreamGenerativeEditorPlugin::AudioStreamGenerativeEditorPlugin() {
-	m_editor = memnew(AudioStreamGenerativeEditor);
+AudioStreamGraphEditorPlugin::AudioStreamGraphEditorPlugin() {
+	m_editor = memnew(AudioStreamGraphEditor);
 	m_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
 	m_bottom_button = add_control_to_bottom_panel(m_editor, TTR("AudioStreamGenerative"));
 	m_bottom_button->hide();
 }
 
-bool AudioStreamGenerativeEditorPlugin::handles(Object *p_object) const {
+bool AudioStreamGraphEditorPlugin::handles(Object *p_object) const {
 	return p_object->is_class("AudioStreamGenerative");
 }
 
-void AudioStreamGenerativeEditorPlugin::make_visible(bool p_visible) {
+void AudioStreamGraphEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		make_bottom_panel_item_visible(m_editor);
 		m_bottom_button->show();
@@ -24,8 +24,8 @@ void AudioStreamGenerativeEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-void AudioStreamGenerativeEditorPlugin::edit(Object *p_object) {
-	AudioStreamGenerative *resource = Object::cast_to<AudioStreamGenerative>(p_object);
+void AudioStreamGraphEditorPlugin::edit(Object *p_object) {
+	AudioStreamGraph *resource = Object::cast_to<AudioStreamGraph>(p_object);
 	ERR_FAIL_COND(resource == nullptr);
 	m_editor->edit(resource);
 }

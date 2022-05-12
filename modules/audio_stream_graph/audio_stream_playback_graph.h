@@ -1,14 +1,14 @@
-#ifndef AUDIO_STREAM_PLAYBACK_GENERATIVE_H
-#define AUDIO_STREAM_PLAYBACK_GENERATIVE_H
+#ifndef AUDIO_STREAM_PLAYBACK_GRAPH_H
+#define AUDIO_STREAM_PLAYBACK_GRAPH_H
 
-#include "modules/audio_stream_generative/audio_stream_generative.h"
+#include "audio_stream_graph.h"
 #include "servers/audio/audio_stream.h"
 
-class AudioStreamPlaybackGenerative : public AudioStreamPlayback {
-	GDCLASS(AudioStreamPlaybackGenerative, AudioStreamPlayback);
+class AudioStreamPlaybackGraph : public AudioStreamPlayback {
+	GDCLASS(AudioStreamPlaybackGraph, AudioStreamPlayback);
 
 private:
-	Ref<AudioStreamGenerative> m_resource;
+	Ref<AudioStreamGraph> m_resource;
 	Ref<AudioStreamPlayback> m_test_playback;
 
 public:
@@ -23,7 +23,7 @@ public:
 
 	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
 
-	void set_resource(Ref<AudioStreamGenerative> resource);
+	void set_resource(Ref<AudioStreamGraph> resource);
 };
 
-#endif // AUDIO_STREAM_PLAYBACK_GENERATIVE_H
+#endif // AUDIO_STREAM_PLAYBACK_GRAPH_H

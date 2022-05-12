@@ -1,10 +1,10 @@
 #include "servers/audio/audio_stream.h"
 
-#ifndef AUDIO_STREAM_GENERATIVE_H
-#define AUDIO_STREAM_GENERATIVE_H
+#ifndef AUDIO_STREAM_GRAPH_H
+#define AUDIO_STREAM_GRAPH_H
 
-class AudioStreamGenerative : public AudioStream {
-	GDCLASS(AudioStreamGenerative, AudioStream);
+class AudioStreamGraph : public AudioStream {
+	GDCLASS(AudioStreamGraph, AudioStream);
 	RES_BASE_EXTENSION("genaudio")
 
 private:
@@ -24,4 +24,4 @@ public:
 	Ref<AudioStream> get_test_stream();
 };
 
-#endif // AUDIO_STREAM_GENERATIVE_H
+#endif // AUDIO_STREAM_GRAPH_H

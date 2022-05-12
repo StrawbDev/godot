@@ -1,0 +1,9 @@
+#ifndef AUDIO_STREAM_GRAPH_REGISTER_TYPES_H
+#define AUDIO_STREAM_GRAPH_REGISTER_TYPES_H
+
+#include "modules/register_module_types.h"
+
+void initialize_audio_stream_graph_module(ModuleInitializationLevel p_level);
+void uninitialize_audio_stream_graph_module(ModuleInitializationLevel p_level);
+
+#endif // AUDIO_STREAM_GRAPH_REGISTER_TYPES_H

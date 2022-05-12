@@ -1,9 +1,0 @@
-#ifndef AUDIO_STREAM_GENERATIVE_REGISTER_TYPES_H
-#define AUDIO_STREAM_GENERATIVE_REGISTER_TYPES_H
-
-#include "modules/register_module_types.h"
-
-void initialize_audio_stream_generative_module(ModuleInitializationLevel p_level);
-void uninitialize_audio_stream_generative_module(ModuleInitializationLevel p_level);
-
-#endif // AUDIO_STREAM_GENERATIVE_REGISTER_TYPES_H

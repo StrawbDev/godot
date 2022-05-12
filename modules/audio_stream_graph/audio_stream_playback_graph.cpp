@@ -1,6 +1,6 @@
-#include "modules/audio_stream_generative/audio_stream_playback_generative.h"
+#include "audio_stream_playback_graph.h"
 
-void AudioStreamPlaybackGenerative::set_resource(Ref<AudioStreamGenerative> resource) {
+void AudioStreamPlaybackGraph::set_resource(Ref<AudioStreamGraph> resource) {
 	m_resource = resource;
 	ERR_FAIL_COND(m_resource.is_null());
 	if (m_resource.is_valid()) {
@@ -10,19 +10,19 @@ void AudioStreamPlaybackGenerative::set_resource(Ref<AudioStreamGenerative> reso
 	}
 }
 
-void AudioStreamPlaybackGenerative::start(float p_from_pos) {
+void AudioStreamPlaybackGraph::start(float p_from_pos) {
 	if (m_test_playback.is_valid()) {
 		m_test_playback->start(p_from_pos);
 	}
 }
 
-void AudioStreamPlaybackGenerative::stop() {
+void AudioStreamPlaybackGraph::stop() {
 	if (m_test_playback.is_valid()) {
 		m_test_playback->stop();
 	}
 }
 
-bool AudioStreamPlaybackGenerative::is_playing() const {
+bool AudioStreamPlaybackGraph::is_playing() const {
 	if (m_test_playback.is_valid()) {
 		return m_test_playback->is_playing();
 	} else {
@@ -30,7 +30,7 @@ bool AudioStreamPlaybackGenerative::is_playing() const {
 	}
 }
 
-int AudioStreamPlaybackGenerative::get_loop_count() const {
+int AudioStreamPlaybackGraph::get_loop_count() const {
 	if (m_test_playback.is_valid()) {
 		return m_test_playback->get_loop_count();
 	} else {
@@ -38,7 +38,7 @@ int AudioStreamPlaybackGenerative::get_loop_count() const {
 	}
 }
 
-float AudioStreamPlaybackGenerative::get_playback_position() const {
+float AudioStreamPlaybackGraph::get_playback_position() const {
 	if (m_test_playback.is_valid()) {
 		return m_test_playback->get_playback_position();
 	} else {
@@ -46,13 +46,13 @@ float AudioStreamPlaybackGenerative::get_playback_position() const {
 	}
 }
 
-void AudioStreamPlaybackGenerative::seek(float p_time) {
+void AudioStreamPlaybackGraph::seek(float p_time) {
 	if (m_test_playback.is_valid()) {
 		return m_test_playback->seek(p_time);
 	}
 }
 
-int AudioStreamPlaybackGenerative::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
+int AudioStreamPlaybackGraph::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
 	if (m_test_playback.is_valid()) {
 		return m_test_playback->mix(p_buffer, p_rate_scale, p_frames);
 	} else {
