@@ -22,8 +22,8 @@ public:
 	virtual float get_length() const override;
 	virtual bool is_monophonic() const override;
 
-	PackedInt32Array get_connections() const;
 	void set_connections(PackedInt32Array connections);
+	PackedInt32Array get_connections() const;
 	void add_connection(int from_node_idx, int from_port_idx, int to_node_idx, int to_port_idx);
 	void remove_connection(int from_node_idx, int from_port_idx, int to_node_idx, int to_port_idx);
 	bool is_connection(int from_node_idx, int from_port_idx, int to_node_idx, int to_port_idx) const;
@@ -31,8 +31,8 @@ public:
 	int num_nodes() const;
 	int add_node(Ref<AudioStreamGraphNode> node);
 	void remove_node(int node_idx);
-	Ref<AudioStreamGraphNode> get_node(int node_idx) const;
 	void set_node(int node_idx, Ref<AudioStreamGraphNode> node);
+	Ref<AudioStreamGraphNode> get_node(int node_idx) const;
 };
 
 #endif // AUDIO_STREAM_GRAPH_H

@@ -4,12 +4,12 @@
 AudioStreamGraphEditorPlugin::AudioStreamGraphEditorPlugin() {
 	m_editor = memnew(AudioStreamGraphEditor);
 	m_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
-	m_bottom_button = add_control_to_bottom_panel(m_editor, TTR("AudioStreamGenerative"));
+	m_bottom_button = add_control_to_bottom_panel(m_editor, TTR("AudioStreamGraph"));
 	m_bottom_button->hide();
 }
 
 bool AudioStreamGraphEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("AudioStreamGenerative");
+	return p_object->is_class("AudioStreamGraph");
 }
 
 void AudioStreamGraphEditorPlugin::make_visible(bool p_visible) {

@@ -32,6 +32,7 @@ bool AudioStreamGraph::is_monophonic() const {
 
 int AudioStreamGraph::add_node(Ref<AudioStreamGraphNode> node) {
 	m_nodes.push_back(node);
+	emit_changed();
 	return m_nodes.size();
 }
 
@@ -43,6 +44,7 @@ void AudioStreamGraph::add_connection(int from_node_idx, int from_port_idx, int 
 	m_connections.push_back(from_port_idx);
 	m_connections.push_back(to_node_idx);
 	m_connections.push_back(to_port_idx);
+	emit_changed();
 }
 
 void AudioStreamGraph::remove_connection(int from_node_idx, int from_port_idx, int to_node_idx, int to_port_idx) {
@@ -52,6 +54,11 @@ void AudioStreamGraph::remove_connection(int from_node_idx, int from_port_idx, i
 	m_connections.remove_at(i + 2);
 	m_connections.remove_at(i + 1);
 	m_connections.remove_at(i);
+	emit_changed();
+}
+
+bool AudioStreamGraph::is_connection(int from_node_idx, int from_port_idx, int to_node_idx, int to_port_idx) const {
+	return _find_connection(from_node_idx, from_port_idx, to_node_idx, to_port_idx) != -1;
 }
 
 PackedInt32Array AudioStreamGraph::get_connections() const {
@@ -61,6 +68,7 @@ PackedInt32Array AudioStreamGraph::get_connections() const {
 void AudioStreamGraph::set_connections(PackedInt32Array connections) {
 	ERR_FAIL_COND(connections.size() % 4 != 0);
 	m_connections = connections;
+	emit_changed();
 }
 
 Ref<AudioStreamGraphNode> AudioStreamGraph::get_node(int node_idx) const {
@@ -71,6 +79,7 @@ Ref<AudioStreamGraphNode> AudioStreamGraph::get_node(int node_idx) const {
 void AudioStreamGraph::set_node(int node_idx, Ref<AudioStreamGraphNode> node) {
 	ERR_FAIL_INDEX(node_idx, m_nodes.size());
 	m_nodes.write[node_idx] = node;
+	emit_changed();
 }
 
 int AudioStreamGraph::num_nodes() const {
@@ -91,7 +100,20 @@ void AudioStreamGraph::remove_node(int node_idx) {
 	}
 
 	m_nodes.remove_at(node_idx);
+	emit_changed();
 }
 
 void AudioStreamGraph::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_connections"), &AudioStreamGraph::set_connections);
+	ClassDB::bind_method(D_METHOD("get_connections"), &AudioStreamGraph::get_connections);
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "connections"), "set_connections", "get_connections");
+	ClassDB::bind_method(D_METHOD("add_connection", "from_node_idx", "from_port_idx", "to_node_idx", "to_port_idx"), &AudioStreamGraph::add_connection);
+	ClassDB::bind_method(D_METHOD("remove_connection", "from_node_idx", "from_port_idx", "to_node_idx", "to_port_idx"), &AudioStreamGraph::remove_connection);
+	ClassDB::bind_method(D_METHOD("is_connection", "from_node_idx", "from_port_idx", "to_node_idx", "to_port_idx"), &AudioStreamGraph::is_connection);
+
+	ClassDB::bind_method(D_METHOD("num_nodes"), &AudioStreamGraph::num_nodes);
+	ClassDB::bind_method(D_METHOD("add_node", "node"), &AudioStreamGraph::add_node);
+	ClassDB::bind_method(D_METHOD("remove_node", "node_idx"), &AudioStreamGraph::remove_node);
+	ClassDB::bind_method(D_METHOD("set_node", "node_idx", "node"), &AudioStreamGraph::set_node);
+	ClassDB::bind_method(D_METHOD("get_node", "node_idx"), &AudioStreamGraph::get_node);
 }
