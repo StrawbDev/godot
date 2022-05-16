@@ -15,6 +15,9 @@ private:
 
 protected:
 	static void _bind_methods();
+	void _get_property_list(List<PropertyInfo> *r_props) const;
+	bool _get(const StringName &p_property, Variant &r_value) const;
+	bool _set(const StringName &p_property, const Variant &p_value);
 
 public:
 	virtual Ref<AudioStreamPlayback> instance_playback() override;

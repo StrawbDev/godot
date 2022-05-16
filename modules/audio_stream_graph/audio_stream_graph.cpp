@@ -103,10 +103,44 @@ void AudioStreamGraph::remove_node(int node_idx) {
 	emit_changed();
 }
 
+void AudioStreamGraph::_get_property_list(List<PropertyInfo> *r_props) const {
+	for (int i = 0; i < m_nodes.size(); i++) {
+		String name = vformat("nodes/%d", i);
+		r_props->push_back(PropertyInfo(Variant::OBJECT, name, PROPERTY_HINT_RESOURCE_TYPE, "AudioStreamGraphNode", PROPERTY_USAGE_NO_EDITOR));
+	}
+}
+
+bool AudioStreamGraph::_get(const StringName &p_property, Variant &r_value) const {
+	String name = p_property;
+	if (name.begins_with("nodes/")) {
+		int index = name.get_slicec('/', 1).to_int();
+		if (index >= 0 && index < m_nodes.size()) {
+			r_value = get_node(index);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool AudioStreamGraph::_set(const StringName &p_property, const Variant &p_value) {
+	String name = p_property;
+	if (name.begins_with("nodes/")) {
+		int index = name.get_slicec('/', 1).to_int();
+		if (index >= 0 && index < m_nodes.size()) {
+			set_node(index, p_value);
+			emit_changed();
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void AudioStreamGraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_connections"), &AudioStreamGraph::set_connections);
 	ClassDB::bind_method(D_METHOD("get_connections"), &AudioStreamGraph::get_connections);
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "connections"), "set_connections", "get_connections");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "connections", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_connections", "get_connections");
 	ClassDB::bind_method(D_METHOD("add_connection", "from_node_idx", "from_port_idx", "to_node_idx", "to_port_idx"), &AudioStreamGraph::add_connection);
 	ClassDB::bind_method(D_METHOD("remove_connection", "from_node_idx", "from_port_idx", "to_node_idx", "to_port_idx"), &AudioStreamGraph::remove_connection);
 	ClassDB::bind_method(D_METHOD("is_connection", "from_node_idx", "from_port_idx", "to_node_idx", "to_port_idx"), &AudioStreamGraph::is_connection);
