@@ -4,13 +4,21 @@ void AudioStreamGraphEditorNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_node_resource"), &AudioStreamGraphEditorNode::get_node_resource);
 }
 
+void AudioStreamGraphEditorNode::set_undo_redo(UndoRedo *undo_redo) {
+	m_undo_redo = undo_redo;
+}
+
 ////////////////////////////
 
 void AudioStreamGraphEditorNodeStream::_on_picker_resource_changed(Ref<Resource> resource) {
 	print_line(vformat("_on_picker_resource_changed(%s)", resource));
 	if (m_node_resource.is_valid()) {
-		if (resource != m_node_resource->get_stream()) {
-			m_node_resource->set_stream(resource);
+		Ref<AudioStream> old_stream = m_node_resource->get_stream();
+		if (resource != old_stream) {
+			m_undo_redo->create_action(TTR("Change AudioStreamGraphNodeStream stream"));
+			m_undo_redo->add_do_property(m_node_resource.ptr(), "stream", resource);
+			m_undo_redo->add_undo_property(m_node_resource.ptr(), "stream", old_stream);
+			m_undo_redo->commit_action();
 		}
 	}
 }

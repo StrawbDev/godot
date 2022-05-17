@@ -25,6 +25,7 @@ void AudioStreamGraphEditorPlugin::make_visible(bool p_visible) {
 }
 
 void AudioStreamGraphEditorPlugin::edit(Object *p_object) {
+	m_editor->set_undo_redo(&get_undo_redo());
 	m_resource = Object::cast_to<AudioStreamGraph>(p_object);
 	ERR_FAIL_COND(m_resource == nullptr);
 	m_editor->edit(m_resource);

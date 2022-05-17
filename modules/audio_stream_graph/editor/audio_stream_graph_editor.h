@@ -3,6 +3,7 @@
 
 #include "../audio_stream_graph.h"
 #include "audio_stream_graph_editor_nodes.h"
+#include "core/object/undo_redo.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/graph_edit.h"
 
@@ -10,7 +11,8 @@ class AudioStreamGraphEditor : public VBoxContainer {
 	GDCLASS(AudioStreamGraphEditor, VBoxContainer);
 
 private:
-	GraphEdit *m_graph;
+	UndoRedo *m_undo_redo = nullptr;
+	GraphEdit *m_graph = nullptr;
 	AudioStreamGraph *m_current_resource = nullptr;
 
 	void _on_connection_request(StringName from, int from_slot, StringName to, int to_slot);
@@ -29,6 +31,7 @@ public:
 	void clear_editor();
 
 	AudioStreamGraphEditor();
+	void set_undo_redo(UndoRedo *undo_redo);
 };
 
 #endif // AUDIO_STREAM_GRAPH_EDITOR_H

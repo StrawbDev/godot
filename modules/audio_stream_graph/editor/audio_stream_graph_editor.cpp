@@ -38,7 +38,7 @@ void AudioStreamGraphEditor::edit(AudioStreamGraph *resource) {
 }
 
 void AudioStreamGraphEditor::add_editor_node(AudioStreamGraphEditorNode *editor_node) {
-	ERR_FAIL_COND(m_current_resource == nullptr);
+	editor_node->set_undo_redo(m_undo_redo);
 	m_graph->add_child(editor_node);
 }
 
@@ -57,4 +57,8 @@ AudioStreamGraphEditor::AudioStreamGraphEditor() {
 	m_graph->connect("connection_request", callable_mp(this, &AudioStreamGraphEditor::_on_connection_request));
 	m_graph->connect("disconnection_request", callable_mp(this, &AudioStreamGraphEditor::_on_disconnection_request));
 	add_child(m_graph);
+}
+
+void AudioStreamGraphEditor::set_undo_redo(UndoRedo *undo_redo) {
+	m_undo_redo = undo_redo;
 }
