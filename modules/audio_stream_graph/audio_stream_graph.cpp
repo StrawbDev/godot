@@ -11,6 +11,11 @@ int AudioStreamGraph::_find_connection(int from_node_idx, int from_port_idx, int
 	return -1;
 }
 
+void AudioStreamGraph::_on_node_resource_changed() {
+	print_line("AudioStreamGraph::_on_node_resource_changed()");
+	emit_changed();
+}
+
 Ref<AudioStreamPlayback> AudioStreamGraph::instance_playback() {
 	Ref<AudioStreamPlaybackGraph> playback;
 	playback.instantiate();
@@ -32,6 +37,7 @@ bool AudioStreamGraph::is_monophonic() const {
 
 int AudioStreamGraph::add_node(Ref<AudioStreamGraphNode> node) {
 	m_nodes.push_back(node);
+	node->connect("changed", callable_mp(this, &AudioStreamGraph::_on_node_resource_changed));
 	emit_changed();
 	return m_nodes.size();
 }
@@ -129,7 +135,9 @@ bool AudioStreamGraph::_set(const StringName &p_property, const Variant &p_value
 		int index = name.get_slicec('/', 1).to_int();
 		if (index >= 0 && index < m_nodes.size()) {
 			set_node(index, p_value);
-			emit_changed();
+			return true;
+		} else if (index == m_nodes.size()) {
+			add_node(p_value);
 			return true;
 		}
 	}

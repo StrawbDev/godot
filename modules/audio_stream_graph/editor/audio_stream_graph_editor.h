@@ -26,6 +26,7 @@ public:
 	void edit(AudioStreamGraph *resource);
 
 	void add_editor_node(AudioStreamGraphEditorNode *editor_node);
+	void clear_editor();
 
 	AudioStreamGraphEditor();
 };

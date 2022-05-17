@@ -16,12 +16,38 @@ void AudioStreamGraphEditor::_on_disconnection_request(StringName from, int from
 void AudioStreamGraphEditor::edit(AudioStreamGraph *resource) {
 	m_current_resource = resource;
 	ERR_FAIL_COND(m_current_resource == nullptr);
+
+	clear_editor();
+
+	for (int i = 0; i < m_current_resource->num_nodes(); i++) {
+		const Ref<AudioStreamGraphNode> &node_resource = m_current_resource->get_node(i);
+		StringName node_class = node_resource->get_class_name();
+		AudioStreamGraphEditorNode *editor_node;
+		if (node_class == "AudioStreamGraphNodeStream") {
+			editor_node = memnew(AudioStreamGraphEditorNodeStream);
+		} else if (node_class == "AudioStreamGraphNodeOutput") {
+			// TODO
+			//editor_node = memnew(AudioStreamGraphEditorNodeOutput)
+		} else {
+			ERR_FAIL_MSG(vformat("Can't edit unknown AudioStreamGraphNode type %s", node_class));
+		}
+
+		editor_node->set_node_resource(node_resource);
+		add_editor_node(editor_node);
+	}
 }
 
 void AudioStreamGraphEditor::add_editor_node(AudioStreamGraphEditorNode *editor_node) {
 	ERR_FAIL_COND(m_current_resource == nullptr);
 	m_graph->add_child(editor_node);
-	m_current_resource->add_node(editor_node->get_node_resource());
+}
+
+void AudioStreamGraphEditor::clear_editor() {
+	for (int i = 0; i < m_graph->get_child_count(false); i++) {
+		Node *node = m_graph->get_child(i, false);
+		m_graph->remove_child(node);
+		memfree(node);
+	}
 }
 
 AudioStreamGraphEditor::AudioStreamGraphEditor() {

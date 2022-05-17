@@ -12,6 +12,7 @@ private:
 	PackedInt32Array m_connections;
 
 	int _find_connection(int from_node_idx, int from_port_idx, int to_node_idx, int to_port_idx) const;
+	void _on_node_resource_changed();
 
 protected:
 	static void _bind_methods();

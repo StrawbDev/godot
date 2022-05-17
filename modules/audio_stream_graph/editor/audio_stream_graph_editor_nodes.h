@@ -12,6 +12,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual String get_node_resource_type() = 0;
+	virtual void set_node_resource(Ref<AudioStreamGraphNode> node_resource) = 0;
 	virtual Ref<AudioStreamGraphNode> get_node_resource() const = 0;
 };
 
@@ -29,6 +31,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual String get_node_resource_type() override;
+	virtual void set_node_resource(Ref<AudioStreamGraphNode> node_resource) override;
 	virtual Ref<AudioStreamGraphNode> get_node_resource() const override;
 
 	AudioStreamGraphEditorNodeStream();

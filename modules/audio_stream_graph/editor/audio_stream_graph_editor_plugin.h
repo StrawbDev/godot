@@ -8,6 +8,7 @@ class AudioStreamGraphEditorPlugin : public EditorPlugin {
 	GDCLASS(AudioStreamGraphEditorPlugin, EditorPlugin);
 
 private:
+	AudioStreamGraph *m_resource;
 	Button *m_bottom_button;
 	AudioStreamGraphEditor *m_editor;
 
