@@ -1,11 +1,30 @@
 #include "audio_stream_graph_editor_nodes.h"
 
+void AudioStreamGraphEditorNode::_notification(int p_notification) {
+	switch (p_notification) {
+		case NOTIFICATION_READY:
+			connect("dragged", callable_mp(this, &AudioStreamGraphEditorNode::_on_dragged));
+			break;
+	}
+}
+
 void AudioStreamGraphEditorNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_node_resource"), &AudioStreamGraphEditorNode::get_node_resource);
 }
 
 void AudioStreamGraphEditorNode::set_undo_redo(UndoRedo *undo_redo) {
 	m_undo_redo = undo_redo;
+}
+
+void AudioStreamGraphEditorNode::_on_dragged(Vector2 from, Vector2 to) {
+	Ref<AudioStreamGraphNode> node_resource = get_node_resource();
+	m_undo_redo->create_action(TTR("Change Node Position"));
+	m_undo_redo->add_do_property(node_resource.ptr(), "position", to);
+	m_undo_redo->add_undo_property(node_resource.ptr(), "position", from);
+	m_undo_redo->commit_action();
+}
+
+AudioStreamGraphEditorNode::AudioStreamGraphEditorNode() {
 }
 
 ////////////////////////////
@@ -15,7 +34,7 @@ void AudioStreamGraphEditorNodeStream::_on_picker_resource_changed(Ref<Resource>
 	if (m_node_resource.is_valid()) {
 		Ref<AudioStream> old_stream = m_node_resource->get_stream();
 		if (resource != old_stream) {
-			m_undo_redo->create_action(TTR("Change AudioStreamGraphNodeStream stream"));
+			m_undo_redo->create_action(TTR("Change Stream"));
 			m_undo_redo->add_do_property(m_node_resource.ptr(), "stream", resource);
 			m_undo_redo->add_undo_property(m_node_resource.ptr(), "stream", old_stream);
 			m_undo_redo->commit_action();

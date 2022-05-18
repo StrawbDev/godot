@@ -32,6 +32,7 @@ void AudioStreamGraphEditor::edit(AudioStreamGraph *resource) {
 			ERR_FAIL_MSG(vformat("Can't edit unknown AudioStreamGraphNode type %s", node_class));
 		}
 
+		editor_node->set_position_offset(node_resource->get_position());
 		editor_node->set_node_resource(node_resource);
 		add_editor_node(editor_node);
 	}
