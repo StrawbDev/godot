@@ -21,6 +21,8 @@ void AudioStreamGraphEditorNode::_on_dragged(Vector2 from, Vector2 to) {
 	m_undo_redo->create_action(TTR("Change Node Position"));
 	m_undo_redo->add_do_property(node_resource.ptr(), "position", to);
 	m_undo_redo->add_undo_property(node_resource.ptr(), "position", from);
+	m_undo_redo->add_do_property(this, "position_offset", to);
+	m_undo_redo->add_undo_property(this, "position_offset", from);
 	m_undo_redo->commit_action();
 }
 
@@ -30,7 +32,6 @@ AudioStreamGraphEditorNode::AudioStreamGraphEditorNode() {
 ////////////////////////////
 
 void AudioStreamGraphEditorNodeStream::_on_picker_resource_changed(Ref<Resource> resource) {
-	print_line(vformat("_on_picker_resource_changed(%s)", resource));
 	if (m_node_resource.is_valid()) {
 		Ref<AudioStream> old_stream = m_node_resource->get_stream();
 		if (resource != old_stream) {
@@ -43,7 +44,6 @@ void AudioStreamGraphEditorNodeStream::_on_picker_resource_changed(Ref<Resource>
 }
 
 void AudioStreamGraphEditorNodeStream::_on_node_resource_changed() {
-	print_line("_on_node_resource_changed()");
 	if (m_node_resource.is_valid()) {
 		if (m_node_resource->get_stream() != m_picker->get_edited_resource()) {
 			m_picker->set_edited_resource(m_node_resource->get_stream());
