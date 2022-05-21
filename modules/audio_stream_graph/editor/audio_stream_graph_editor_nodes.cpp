@@ -1,4 +1,6 @@
 #include "audio_stream_graph_editor_nodes.h"
+#include "audio_stream_graph_editor.h"
+#include "scene/gui/label.h"
 
 void AudioStreamGraphEditorNode::_notification(int p_notification) {
 	switch (p_notification) {
@@ -76,4 +78,31 @@ AudioStreamGraphEditorNodeStream::AudioStreamGraphEditorNodeStream() {
 	m_picker->set_base_type("AudioStream");
 	m_picker->connect("resource_changed", callable_mp(this, &AudioStreamGraphEditorNodeStream::_on_picker_resource_changed));
 	add_child(m_picker);
+	set_slot_enabled_right(0, true);
+	set_slot_type_right(0, AudioStreamGraphEditor::SLOT_TYPE_AUDIO);
+	set_slot_color_right(0, AudioStreamGraphEditor::SLOT_COLOR_AUDIO);
+}
+
+////////////////////////////////////////////
+
+String AudioStreamGraphEditorNodeOutput::get_node_resource_type() {
+	return "AudioStreamGraphNodeOutput";
+}
+
+void AudioStreamGraphEditorNodeOutput::set_node_resource(Ref<AudioStreamGraphNode> node_resource) {
+	m_node_resource = node_resource;
+}
+
+Ref<AudioStreamGraphNode> AudioStreamGraphEditorNodeOutput::get_node_resource() const {
+	return m_node_resource;
+}
+
+AudioStreamGraphEditorNodeOutput::AudioStreamGraphEditorNodeOutput() {
+	set_title(TTR("Audio Output"));
+	Label *label = memnew(Label);
+	label->set_text(TTR("Output"));
+	add_child(label);
+	set_slot_enabled_left(0, true);
+	set_slot_type_left(0, AudioStreamGraphEditor::SLOT_TYPE_AUDIO);
+	set_slot_color_left(0, AudioStreamGraphEditor::SLOT_COLOR_AUDIO);
 }

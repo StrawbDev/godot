@@ -46,4 +46,20 @@ public:
 	AudioStreamGraphEditorNodeStream();
 };
 
+//////////////////////////////////////
+
+class AudioStreamGraphEditorNodeOutput : public AudioStreamGraphEditorNode {
+	GDCLASS(AudioStreamGraphEditorNodeOutput, AudioStreamGraphEditorNode);
+
+private:
+	Ref<AudioStreamGraphNodeOutput> m_node_resource;
+
+public:
+	virtual String get_node_resource_type() override;
+	virtual void set_node_resource(Ref<AudioStreamGraphNode> node_resource) override;
+	virtual Ref<AudioStreamGraphNode> get_node_resource() const override;
+
+	AudioStreamGraphEditorNodeOutput();
+};
+
 #endif // AUDIO_STREAM_GRAPH_EDITOR_NODES_H

@@ -12,7 +12,6 @@ int AudioStreamGraph::_find_connection(int from_node_idx, int from_port_idx, int
 }
 
 void AudioStreamGraph::_on_node_resource_changed() {
-	print_line("AudioStreamGraph::_on_node_resource_changed()");
 	emit_changed();
 }
 
