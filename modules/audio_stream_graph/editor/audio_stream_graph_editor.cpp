@@ -33,6 +33,30 @@ void AudioStreamGraphEditor::_on_disconnection_request(StringName from, int from
 	m_undo_redo->commit_action();
 }
 
+void AudioStreamGraphEditor::gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+	Ref<InputEventMouseButton> mouse_event = p_event;
+	if (
+			mouse_event.is_valid() && mouse_event->get_button_index() == MouseButton::RIGHT && !mouse_event->is_pressed()) {
+		AudioStreamGraphEditorNodeStream *editor_node = memnew(AudioStreamGraphEditorNodeStream);
+		String resource_class = editor_node->get_node_resource_type();
+		AudioStreamGraphNode *node_resource = Object::cast_to<AudioStreamGraphNode>(ClassDB::instantiate(resource_class));
+		ERR_FAIL_COND(node_resource == nullptr);
+
+		int idx = m_current_resource->num_nodes();
+		editor_node->set_name(String::num_int64(idx));
+		editor_node->set_node_resource(node_resource);
+
+		m_undo_redo->create_action(TTR("Add Node"));
+		m_undo_redo->add_do_reference(editor_node);
+		m_undo_redo->add_do_method(this, "add_editor_node", editor_node);
+		m_undo_redo->add_undo_method(this, "remove_editor_node", editor_node);
+		m_undo_redo->add_do_method(m_current_resource, "add_node", node_resource);
+		m_undo_redo->add_undo_method(m_current_resource, "remove_node", idx);
+		m_undo_redo->commit_action();
+	}
+}
+
 void AudioStreamGraphEditor::edit(AudioStreamGraph *resource) {
 	m_current_resource = resource;
 	ERR_FAIL_COND(m_current_resource == nullptr);
@@ -73,6 +97,10 @@ void AudioStreamGraphEditor::add_editor_node(AudioStreamGraphEditorNode *editor_
 	m_graph->add_child(editor_node);
 }
 
+void AudioStreamGraphEditor::remove_editor_node(AudioStreamGraphEditorNode *editor_node) {
+	m_graph->remove_child(editor_node);
+}
+
 void AudioStreamGraphEditor::clear_editor() {
 	m_graph->clear_connections();
 	for (int i = m_graph->get_child_count(false) - 1; i >= 0; i--) {
@@ -82,8 +110,14 @@ void AudioStreamGraphEditor::clear_editor() {
 	}
 }
 
+void AudioStreamGraphEditor::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("add_editor_node", "editor_node"), &AudioStreamGraphEditor::add_editor_node);
+	ClassDB::bind_method(D_METHOD("remove_editor_node", "editor_node"), &AudioStreamGraphEditor::remove_editor_node);
+}
+
 AudioStreamGraphEditor::AudioStreamGraphEditor() {
 	m_graph = memnew(GraphEdit);
+	m_graph->set_mouse_filter(MOUSE_FILTER_PASS);
 	m_graph->set_v_size_flags(SIZE_EXPAND_FILL);
 	m_graph->add_valid_right_disconnect_type(SLOT_TYPE_AUDIO);
 	m_graph->connect("connection_request", callable_mp(this, &AudioStreamGraphEditor::_on_connection_request));

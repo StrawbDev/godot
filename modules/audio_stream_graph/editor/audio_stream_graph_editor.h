@@ -18,7 +18,12 @@ private:
 	void _on_connection_request(StringName from, int from_slot, StringName to, int to_slot);
 	void _on_disconnection_request(StringName from, int from_slot, StringName to, int to_slot);
 
+protected:
+	static void _bind_methods();
+
 public:
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+
 	enum SlotTypes {
 		SLOT_TYPE_AUDIO = 0,
 	};
@@ -27,6 +32,7 @@ public:
 
 	void edit(AudioStreamGraph *resource);
 
+	void remove_editor_node(AudioStreamGraphEditorNode *editor_node);
 	void add_editor_node(AudioStreamGraphEditorNode *editor_node);
 	void clear_editor();
 
