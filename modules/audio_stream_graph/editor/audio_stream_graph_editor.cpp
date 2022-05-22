@@ -43,7 +43,7 @@ void AudioStreamGraphEditor::gui_input(const Ref<InputEvent> &p_event) {
 		AudioStreamGraphNode *node_resource = Object::cast_to<AudioStreamGraphNode>(ClassDB::instantiate(resource_class));
 		ERR_FAIL_COND(node_resource == nullptr);
 
-		int idx = m_current_resource->num_nodes();
+		int idx = m_current_resource->next_node_id();
 		editor_node->set_name(String::num_int64(idx));
 		editor_node->set_node_resource(node_resource);
 
@@ -63,8 +63,12 @@ void AudioStreamGraphEditor::edit(AudioStreamGraph *resource) {
 
 	clear_editor();
 
-	for (int i = 0; i < m_current_resource->num_nodes(); i++) {
-		const Ref<AudioStreamGraphNode> &node_resource = m_current_resource->get_node(i);
+	Dictionary nodes = m_current_resource->get_nodes();
+	for (int i = 0; i < nodes.size(); i++) {
+		int id = nodes.get_key_at_index(i);
+		const Ref<AudioStreamGraphNode> &node_resource = nodes.get_value_at_index(i);
+		ERR_FAIL_COND(node_resource.is_null());
+
 		StringName node_class = node_resource->get_class_name();
 		AudioStreamGraphEditorNode *editor_node;
 		if (node_class == "AudioStreamGraphNodeStream") {
@@ -75,20 +79,22 @@ void AudioStreamGraphEditor::edit(AudioStreamGraph *resource) {
 			ERR_FAIL_MSG(vformat("Can't edit unknown AudioStreamGraphNode type %s", node_class));
 		}
 
-		editor_node->set_name(String::num_int64(i));
-		editor_node->set_position_offset(node_resource->get_position());
+		editor_node->set_name(String::num_int64(id));
 		editor_node->set_node_resource(node_resource);
+		editor_node->set_position_offset(node_resource->get_position());
 		add_editor_node(editor_node);
 	}
 
-	PackedInt32Array connections = m_current_resource->get_connections();
-	ERR_FAIL_COND(connections.size() % 4 != 0);
-	for (int i = 0; i < connections.size() / 4; i += 4) {
-		StringName from = String::num_int64(connections[i]);
-		int from_port = connections[i + 1];
-		StringName to = String::num_int64(connections[i + 2]);
-		int to_port = connections[i + 3];
-		m_graph->connect_node(from, from_port, to, to_port);
+	Dictionary connections = m_current_resource->get_connections();
+	for (int i = 0; i < connections.size(); i++) {
+		String from_node = String::num_int64(connections.get_key_at_index(i));
+		Array connection_list = connections.get_value_at_index(i);
+		for (int j = 0; j < connection_list.size(); j++) {
+			Array tuple = connection_list[i];
+			ERR_FAIL_COND(tuple.size() != 3);
+			String to_node = String::num_int64(tuple[1]);
+			m_graph->connect_node(from_node, tuple[0], to_node, tuple[2]);
+		}
 	}
 }
 
