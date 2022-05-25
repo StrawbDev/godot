@@ -94,6 +94,9 @@ Ref<AudioStreamGraphNode> AudioStreamGraph::get_node(int node_id) const {
 }
 
 void AudioStreamGraph::set_node(int node_id, Ref<AudioStreamGraphNode> node) {
+	if (node_id > m_max_id) {
+		m_max_id = node_id;
+	}
 	m_nodes[node_id] = node;
 	emit_changed();
 }

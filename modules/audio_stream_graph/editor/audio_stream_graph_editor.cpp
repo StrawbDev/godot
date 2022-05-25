@@ -90,7 +90,7 @@ void AudioStreamGraphEditor::edit(AudioStreamGraph *resource) {
 		String from_node = String::num_int64(connections.get_key_at_index(i));
 		Array connection_list = connections.get_value_at_index(i);
 		for (int j = 0; j < connection_list.size(); j++) {
-			Array tuple = connection_list[i];
+			Array tuple = connection_list[j];
 			ERR_FAIL_COND(tuple.size() != 3);
 			String to_node = String::num_int64(tuple[1]);
 			m_graph->connect_node(from_node, tuple[0], to_node, tuple[2]);
