@@ -5,6 +5,15 @@ void AudioStreamGraph::_on_sub_resource_changed() {
 	emit_changed();
 }
 
+int AudioStreamGraph::_find_output_node() const {
+	for (const KeyValue<int, Ref<AudioStreamGraphNode>> &entry : m_nodes) {
+		if (entry.value.is_valid() && entry.value->is_class("AudioStreamGraphNodeOutput")) {
+			return entry.key;
+		}
+	}
+	return -1;
+}
+
 Ref<AudioStreamPlayback> AudioStreamGraph::instance_playback() {
 	Ref<AudioStreamPlaybackGraph> playback;
 	playback.instantiate();
@@ -36,56 +45,64 @@ int AudioStreamGraph::add_node(Ref<AudioStreamGraphNode> node) {
 	return m_max_id;
 }
 
-void AudioStreamGraph::add_connection(int from_node_idx, int from_port_idx, int to_node_idx, int to_port_idx) {
-	if (!m_connections[from_node_idx].is_array()) {
-		m_connections[from_node_idx] = Array();
-	}
-
-	Array node_connections = m_connections[from_node_idx];
-	Array connection_tuple;
-	connection_tuple.push_back(from_port_idx);
-	connection_tuple.push_back(to_node_idx);
-	connection_tuple.push_back(to_port_idx);
-	node_connections.append(connection_tuple);
+void AudioStreamGraph::add_connection(int from_node_id, int from_port_idx, int to_node_id, int to_port_idx) {
+	ConnectionTuple connection{ from_port_idx, to_node_id, to_port_idx };
+	m_connections[from_node_id].push_back(connection);
 	emit_changed();
 }
 
-void AudioStreamGraph::remove_connection(int from_node_idx, int from_port_idx, int to_node_idx, int to_port_idx) {
-	if (!m_connections[from_node_idx].is_array()) {
-		return;
-	}
-
-	Array node_connections = m_connections[from_node_idx];
-	Array connection_tuple;
-	connection_tuple.push_back(from_port_idx);
-	connection_tuple.push_back(to_node_idx);
-	connection_tuple.push_back(to_port_idx);
-	int connection_idx = node_connections.find(connection_tuple);
+void AudioStreamGraph::remove_connection(int from_node_id, int from_port_idx, int to_node_id, int to_port_idx) {
+	Vector<ConnectionTuple> node_connections = m_connections[from_node_id];
+	ConnectionTuple connection{ from_port_idx, to_node_id, to_port_idx };
+	int connection_idx = node_connections.find(connection);
 	if (connection_idx != -1) {
 		node_connections.remove_at(connection_idx);
 		emit_changed();
 	}
 }
 
-bool AudioStreamGraph::is_connection(int from_node_idx, int from_port_idx, int to_node_idx, int to_port_idx) const {
-	if (!m_connections[from_node_idx].is_array()) {
-		return false;
-	}
-
-	Array node_connections = m_connections[from_node_idx];
-	Array connection_tuple;
-	connection_tuple.push_back(from_port_idx);
-	connection_tuple.push_back(to_node_idx);
-	connection_tuple.push_back(to_port_idx);
-	return node_connections.find(connection_tuple) != -1;
+bool AudioStreamGraph::is_connection(int from_node_id, int from_port_idx, int to_node_id, int to_port_idx) const {
+	ConnectionTuple connection{ from_port_idx, to_node_id, to_port_idx };
+	return m_connections[from_node_id].find(connection) != -1;
 }
 
 Dictionary AudioStreamGraph::get_connections() const {
-	return m_connections;
+	Dictionary result;
+	for (const KeyValue<int, Vector<ConnectionTuple>> &entry : m_connections) {
+		Array connection_list;
+		for (const ConnectionTuple &connection : entry.value) {
+			Array result_tuple;
+			result_tuple.push_back(connection.from_port);
+			result_tuple.push_back(connection.to_node);
+			result_tuple.push_back(connection.to_port);
+			connection_list.push_back(result_tuple);
+		}
+		result[entry.key] = connection_list;
+	}
+	return result;
 }
 
 void AudioStreamGraph::set_connections(Dictionary connections) {
-	m_connections = connections;
+	m_connections.clear();
+	m_max_id = -1;
+
+	for (int i = 0; i < connections.size(); i++) {
+		int node_id = connections.get_key_at_index(i);
+		Vector<ConnectionTuple> &connection_tuples = m_connections[node_id];
+		if (node_id > m_max_id) {
+			m_max_id = node_id;
+		}
+
+		Array node_connections = connections.get_value_at_index(i);
+		for (int j = 0; j < node_connections.size(); j++) {
+			Array tuple_array = node_connections[j];
+			if (tuple_array.size() == 3) {
+				ConnectionTuple tuple{ tuple_array[0], tuple_array[1], tuple_array[2] };
+				connection_tuples.push_back(tuple);
+			}
+		}
+	}
+
 	emit_changed();
 }
 
@@ -117,33 +134,22 @@ void AudioStreamGraph::remove_node(int node_id) {
 	emit_changed();
 }
 
-void AudioStreamGraph::set_nodes(Dictionary nodes) {
-	m_nodes = nodes;
-	emit_changed();
-}
-
 Dictionary AudioStreamGraph::get_nodes() const {
-	return m_nodes;
+	Dictionary result;
+	for (const KeyValue<int, Ref<AudioStreamGraphNode>> &entry : m_nodes) {
+		result[entry.key] = entry.value;
+	}
+	return result;
 }
 
 PackedInt32Array AudioStreamGraph::get_connections_for_node(int node_id) const {
 	PackedInt32Array result;
-	for (int i = 0; i < m_connections.size(); i++) {
-		int from_node = m_connections.get_key_at_index(i);
 
-		Array connection_tuple = m_connections.get_value_at_index(i);
-		if (connection_tuple.size() != 3) {
-			continue;
-		}
-
-		int from_port = connection_tuple[0];
-		int to_node = connection_tuple[1];
-		int to_port = connection_tuple[2];
-
-		result.push_back(from_node);
-		result.push_back(from_port);
-		result.push_back(to_node);
-		result.push_back(to_port);
+	for (const ConnectionTuple &connection : m_connections.get(node_id)) {
+		result.push_back(node_id);
+		result.push_back(connection.from_port);
+		result.push_back(connection.to_node);
+		result.push_back(connection.to_port);
 	}
 
 	return result;
@@ -157,9 +163,8 @@ void AudioStreamGraph::remove_connections_for_node(int node_id) {
 }
 
 void AudioStreamGraph::_get_property_list(List<PropertyInfo> *r_props) const {
-	for (int i = 0; i < m_nodes.size(); i++) {
-		int node_id = m_nodes.get_key_at_index(i);
-		StringName name = vformat("nodes/%d", node_id);
+	for (const KeyValue<int, Ref<AudioStreamGraphNode>> &entry : m_nodes) {
+		StringName name = vformat("nodes/%d", entry.key);
 		r_props->push_back(PropertyInfo(Variant::OBJECT, name, PROPERTY_HINT_RESOURCE_TYPE, "AudioStreamGraphNode", PROPERTY_USAGE_NO_EDITOR));
 	}
 }
@@ -199,6 +204,4 @@ void AudioStreamGraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_node", "node_idx"), &AudioStreamGraph::remove_node);
 	ClassDB::bind_method(D_METHOD("set_node", "node_idx", "node"), &AudioStreamGraph::set_node);
 	ClassDB::bind_method(D_METHOD("get_node", "node_idx"), &AudioStreamGraph::get_node);
-	ClassDB::bind_method(D_METHOD("set_nodes", "nodes"), &AudioStreamGraph::set_nodes);
-	ClassDB::bind_method(D_METHOD("get_nodes"), &AudioStreamGraph::get_nodes);
 }

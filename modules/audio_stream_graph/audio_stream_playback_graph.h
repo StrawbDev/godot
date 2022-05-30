@@ -3,15 +3,20 @@
 
 #include "audio_stream_graph.h"
 #include "servers/audio/audio_stream.h"
-
 class AudioStreamPlaybackGraph : public AudioStreamPlayback {
 	GDCLASS(AudioStreamPlaybackGraph, AudioStreamPlayback);
 
 private:
 	Ref<AudioStreamGraph> m_resource;
-	Ref<AudioStreamPlayback> m_test_playback;
+	uint64_t m_position = 0;
+	bool m_playing = false;
+
+	Vector<AudioStreamGraph::Bytecode> m_bytecode;
+	Vector<Ref<AudioStream>> m_audio_inputs;
 
 public:
+	int get_sample_rate() const;
+
 	virtual void start(float p_from_pos = 0.0) override;
 	virtual void stop() override;
 	virtual bool is_playing() const override;
