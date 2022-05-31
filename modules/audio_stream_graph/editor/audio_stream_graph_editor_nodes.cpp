@@ -2,6 +2,8 @@
 #include "audio_stream_graph_editor.h"
 #include "scene/gui/label.h"
 
+// AudioStreamGraphEditorNode
+
 void AudioStreamGraphEditorNode::_notification(int p_notification) {
 	switch (p_notification) {
 		case NOTIFICATION_READY:
@@ -32,6 +34,7 @@ AudioStreamGraphEditorNode::AudioStreamGraphEditorNode() {
 }
 
 ////////////////////////////
+// AudioStreamGraphEditorNodeStream
 
 void AudioStreamGraphEditorNodeStream::_on_picker_resource_changed(Ref<Resource> resource) {
 	if (m_node_resource.is_valid()) {
@@ -84,6 +87,7 @@ AudioStreamGraphEditorNodeStream::AudioStreamGraphEditorNodeStream() {
 }
 
 ////////////////////////////////////////////
+// AudioStreamGraphEditorNodeOutput
 
 String AudioStreamGraphEditorNodeOutput::get_node_resource_type() {
 	return "AudioStreamGraphNodeOutput";
@@ -105,4 +109,60 @@ AudioStreamGraphEditorNodeOutput::AudioStreamGraphEditorNodeOutput() {
 	set_slot_enabled_left(0, true);
 	set_slot_type_left(0, AudioStreamGraphEditor::SLOT_TYPE_AUDIO);
 	set_slot_color_left(0, AudioStreamGraphEditor::SLOT_COLOR_AUDIO);
+}
+
+////////////////////////////////////
+// AudioStreamGraphEditorNodeMix
+
+String AudioStreamGraphEditorNodeMix::get_node_resource_type() {
+	return "AudioStreamGraphNodeMix";
+}
+
+void AudioStreamGraphEditorNodeMix::set_node_resource(Ref<AudioStreamGraphNode> node_resource) {
+	m_node_resource = node_resource;
+}
+
+Ref<AudioStreamGraphNode> AudioStreamGraphEditorNodeMix::get_node_resource() const {
+	return m_node_resource;
+}
+
+AudioStreamGraphEditorNodeMix::AudioStreamGraphEditorNodeMix() {
+	set_title(TTR("Mix"));
+	int i = 0;
+
+	Label *mix1_label = memnew(Label);
+	mix1_label->set_text("1.0");
+	add_child(mix1_label);
+	set_slot_enabled_left(i, true);
+	set_slot_type_left(i, AudioStreamGraphEditor::SLOT_TYPE_CONTROL);
+	set_slot_color_left(i, AudioStreamGraphEditor::SLOT_COLOR_CONTROL);
+	i++;
+
+	Label *audio1_label = memnew(Label);
+	audio1_label->set_text(TTR("Input 1"));
+	add_child(audio1_label);
+	set_slot_enabled_left(i, true);
+	set_slot_type_left(i, AudioStreamGraphEditor::SLOT_TYPE_AUDIO);
+	set_slot_color_left(i, AudioStreamGraphEditor::SLOT_COLOR_AUDIO);
+	i++;
+
+	Label *mix2_label = memnew(Label);
+	mix2_label->set_text("1.0");
+	add_child(mix2_label);
+	set_slot_enabled_left(i, true);
+	set_slot_type_left(i, AudioStreamGraphEditor::SLOT_TYPE_CONTROL);
+	set_slot_color_left(i, AudioStreamGraphEditor::SLOT_COLOR_CONTROL);
+	i++;
+
+	Label *audio2_label = memnew(Label);
+	audio2_label->set_text(TTR("Input 2"));
+	add_child(audio2_label);
+	set_slot_enabled_left(i, true);
+	set_slot_type_left(i, AudioStreamGraphEditor::SLOT_TYPE_AUDIO);
+	set_slot_color_left(i, AudioStreamGraphEditor::SLOT_COLOR_AUDIO);
+	i++;
+
+	set_slot_enabled_right(0, true);
+	set_slot_type_right(0, AudioStreamGraphEditor::SLOT_TYPE_AUDIO);
+	set_slot_color_right(0, AudioStreamGraphEditor::SLOT_COLOR_AUDIO);
 }

@@ -14,6 +14,7 @@ void initialize_audio_stream_graph_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_ABSTRACT_CLASS(AudioStreamGraphNode);
 		GDREGISTER_CLASS(AudioStreamGraphNodeStream);
 		GDREGISTER_CLASS(AudioStreamGraphNodeOutput);
+		GDREGISTER_CLASS(AudioStreamGraphNodeMix);
 	}
 
 #ifdef TOOLS_ENABLED

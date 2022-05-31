@@ -1,5 +1,7 @@
 #include "audio_stream_graph_nodes.h"
 
+// AudioStreamGraphNode
+
 Vector2 AudioStreamGraphNode::get_position() const {
 	return m_position;
 }
@@ -16,6 +18,7 @@ void AudioStreamGraphNode::_bind_methods() {
 }
 
 ///////////////////////////
+// AudioStreamGraphNodeStream
 
 Ref<AudioStream> AudioStreamGraphNodeStream::get_stream() const {
 	return m_stream;
@@ -29,5 +32,33 @@ void AudioStreamGraphNodeStream::set_stream(Ref<AudioStream> stream) {
 void AudioStreamGraphNodeStream::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_stream", "stream"), &AudioStreamGraphNodeStream::set_stream);
 	ClassDB::bind_method(D_METHOD("get_stream"), &AudioStreamGraphNodeStream::get_stream);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PropertyHint::PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
+}
+
+//////////////////////////
+// AudioStreamGraphNodeMix
+
+void AudioStreamGraphNodeMix::set_mix1(float amount) {
+	m_mix1 = amount;
+}
+
+float AudioStreamGraphNodeMix::get_mix1() const {
+	return m_mix1;
+}
+
+void AudioStreamGraphNodeMix::set_mix2(float amount) {
+	m_mix2 = amount;
+}
+
+float AudioStreamGraphNodeMix::get_mix2() const {
+	return m_mix2;
+}
+
+void AudioStreamGraphNodeMix::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_mix1", "amount"), &AudioStreamGraphNodeMix::set_mix1);
+	ClassDB::bind_method(D_METHOD("get_mix1"), &AudioStreamGraphNodeMix::get_mix1);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mix1"), "set_mix1", "get_mix1");
+	ClassDB::bind_method(D_METHOD("set_mix2", "amount"), &AudioStreamGraphNodeMix::set_mix2);
+	ClassDB::bind_method(D_METHOD("get_mix2"), &AudioStreamGraphNodeMix::get_mix2);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mix2"), "set_mix2", "get_mix2");
 }

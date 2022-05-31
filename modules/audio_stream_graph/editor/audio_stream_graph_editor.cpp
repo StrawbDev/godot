@@ -4,6 +4,7 @@
 #include "audio_stream_graph_editor_nodes.h"
 
 const Color AudioStreamGraphEditor::SLOT_COLOR_AUDIO = Color(1, 0, 0);
+const Color AudioStreamGraphEditor::SLOT_COLOR_CONTROL = Color(1, 1, 1);
 
 void AudioStreamGraphEditor::_on_connection_request(StringName from, int from_slot, StringName to, int to_slot) {
 	ERR_FAIL_COND(m_current_resource == nullptr);
@@ -36,9 +37,8 @@ void AudioStreamGraphEditor::_on_disconnection_request(StringName from, int from
 void AudioStreamGraphEditor::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 	Ref<InputEventMouseButton> mouse_event = p_event;
-	if (
-			mouse_event.is_valid() && mouse_event->get_button_index() == MouseButton::RIGHT && !mouse_event->is_pressed()) {
-		AudioStreamGraphEditorNodeStream *editor_node = memnew(AudioStreamGraphEditorNodeStream);
+	if (mouse_event.is_valid() && mouse_event->get_button_index() == MouseButton::RIGHT && !mouse_event->is_pressed()) {
+		AudioStreamGraphEditorNodeMix *editor_node = memnew(AudioStreamGraphEditorNodeMix);
 		String resource_class = editor_node->get_node_resource_type();
 		AudioStreamGraphNode *node_resource = Object::cast_to<AudioStreamGraphNode>(ClassDB::instantiate(resource_class));
 		ERR_FAIL_COND(node_resource == nullptr);
@@ -75,6 +75,8 @@ void AudioStreamGraphEditor::edit(AudioStreamGraph *resource) {
 			editor_node = memnew(AudioStreamGraphEditorNodeStream);
 		} else if (node_class == "AudioStreamGraphNodeOutput") {
 			editor_node = memnew(AudioStreamGraphEditorNodeOutput);
+		} else if (node_class == "AudioStreamGraphNodeMix") {
+			editor_node = memnew(AudioStreamGraphEditorNodeMix);
 		} else {
 			ERR_FAIL_MSG(vformat("Can't edit unknown AudioStreamGraphNode type %s", node_class));
 		}

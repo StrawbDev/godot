@@ -26,9 +26,11 @@ public:
 
 	enum SlotTypes {
 		SLOT_TYPE_AUDIO = 0,
+		SLOT_TYPE_CONTROL = 1,
 	};
 
 	static const Color SLOT_COLOR_AUDIO;
+	static const Color SLOT_COLOR_CONTROL;
 
 	void edit(AudioStreamGraph *resource);
 

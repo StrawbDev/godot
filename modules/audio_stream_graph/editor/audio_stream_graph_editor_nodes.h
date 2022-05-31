@@ -6,6 +6,8 @@
 #include "editor/editor_resource_picker.h"
 #include "scene/gui/graph_node.h"
 
+// AudioStreamGraphEditorNode
+
 class AudioStreamGraphEditorNode : public GraphNode {
 	GDCLASS(AudioStreamGraphEditorNode, GraphNode);
 
@@ -24,6 +26,9 @@ public:
 	void set_undo_redo(UndoRedo *undo_redo);
 	AudioStreamGraphEditorNode();
 };
+
+////////////////////////////////////
+// AudioStreamGraphEditorNodeStream
 
 class AudioStreamGraphEditorNodeStream : public AudioStreamGraphEditorNode {
 	GDCLASS(AudioStreamGraphEditorNodeStream, AudioStreamGraphEditorNode);
@@ -47,6 +52,7 @@ public:
 };
 
 //////////////////////////////////////
+// AudioStreamGraphEditorNodeOutput
 
 class AudioStreamGraphEditorNodeOutput : public AudioStreamGraphEditorNode {
 	GDCLASS(AudioStreamGraphEditorNodeOutput, AudioStreamGraphEditorNode);
@@ -60,6 +66,23 @@ public:
 	virtual Ref<AudioStreamGraphNode> get_node_resource() const override;
 
 	AudioStreamGraphEditorNodeOutput();
+};
+
+////////////////////////////////////
+// AudioStreamGraphEditorNodeMix
+
+class AudioStreamGraphEditorNodeMix : public AudioStreamGraphEditorNode {
+	GDCLASS(AudioStreamGraphEditorNodeMix, AudioStreamGraphEditorNode);
+
+private:
+	Ref<AudioStreamGraphNodeMix> m_node_resource;
+
+public:
+	virtual String get_node_resource_type() override;
+	virtual void set_node_resource(Ref<AudioStreamGraphNode> node_resource) override;
+	virtual Ref<AudioStreamGraphNode> get_node_resource() const override;
+
+	AudioStreamGraphEditorNodeMix();
 };
 
 #endif // AUDIO_STREAM_GRAPH_EDITOR_NODES_H

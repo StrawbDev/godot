@@ -35,4 +35,22 @@ class AudioStreamGraphNodeOutput : public AudioStreamGraphNode {
 	GDCLASS(AudioStreamGraphNodeOutput, AudioStreamGraphNode);
 };
 
+class AudioStreamGraphNodeMix : public AudioStreamGraphNode {
+	GDCLASS(AudioStreamGraphNodeMix, AudioStreamGraphNode);
+
+private:
+	float m_mix1 = 1;
+	float m_mix2 = 1;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_mix1(float amount);
+	float get_mix1() const;
+
+	void set_mix2(float amount);
+	float get_mix2() const;
+};
+
 #endif
