@@ -20,6 +20,31 @@ private:
 		bool operator!=(const ConnectionTuple &b) const {
 			return !(*this == b);
 		}
+
+		bool operator<(const ConnectionTuple &b) const {
+			if (from_port < b.from_port) {
+				return true;
+			} else if (from_port == b.from_port) {
+				if (to_node < b.to_node) {
+					return true;
+				} else if (to_node == b.to_node) {
+					return to_port < b.to_port;
+				}
+			}
+			return false;
+		}
+
+		bool operator<=(const ConnectionTuple &b) const {
+			return *this == b || *this < b;
+		}
+
+		bool operator>(const ConnectionTuple &b) const {
+			return !(*this <= b);
+		}
+
+		bool operator>=(const ConnectionTuple &b) const {
+			return *this == b || *this > b;
+		}
 	};
 
 	HashMap<int, Ref<AudioStreamGraphNode>> m_nodes;
@@ -28,6 +53,8 @@ private:
 
 	void _on_sub_resource_changed();
 	int _find_output_node() const;
+	HashMap<int, Vector<ConnectionTuple>> _get_inverted_connections_sorted() const;
+	void _do_compile_traversal() const;
 
 protected:
 	static void _bind_methods();

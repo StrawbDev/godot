@@ -14,7 +14,55 @@ int AudioStreamGraph::_find_output_node() const {
 	return -1;
 }
 
+HashMap<int, Vector<AudioStreamGraph::ConnectionTuple>> AudioStreamGraph::_get_inverted_connections_sorted() const {
+	HashMap<int, Vector<ConnectionTuple>> result;
+	for (const KeyValue<int, Vector<ConnectionTuple>> &entry : m_connections) {
+		for (const ConnectionTuple &tuple : entry.value) {
+			ConnectionTuple connection{ tuple.to_port, entry.key, tuple.from_port };
+			result[tuple.to_node].push_back(connection);
+		}
+	}
+
+	for (KeyValue<int, Vector<ConnectionTuple>> &entry : result) {
+		Vector<ConnectionTuple> &connection_list = entry.value;
+		struct Sorter {
+			bool operator()(const ConnectionTuple &a, const ConnectionTuple &b) const {
+				return a >= b;
+			}
+		};
+		connection_list.sort_custom<Sorter>();
+	}
+
+	return result;
+}
+
+void AudioStreamGraph::_do_compile_traversal() const {
+	int start = _find_output_node();
+	HashMap<int, Vector<ConnectionTuple>> compile_graph = _get_inverted_connections_sorted();
+	Set<int> visited;
+	Vector<int> to_visit;
+	to_visit.push_back(start);
+
+	while (!to_visit.is_empty()) {
+		int current = to_visit.get(to_visit.size() - 1);
+		to_visit.remove_at(to_visit.size() - 1);
+
+		// emit_bytecode(current);
+		visited.insert(current);
+		print_line(vformat("AudioStreamGraph visited %d", current));
+
+		Vector<ConnectionTuple> connections = compile_graph[current];
+		for (const ConnectionTuple &connection : connections) {
+			int next = connection.to_node;
+			if (!visited.has(next)) {
+				to_visit.push_back(next);
+			}
+		}
+	}
+}
+
 Ref<AudioStreamPlayback> AudioStreamGraph::instance_playback() {
+	compile();
 	Ref<AudioStreamPlaybackGraph> playback;
 	playback.instantiate();
 	playback->set_resource(this);
@@ -160,6 +208,12 @@ void AudioStreamGraph::remove_connections_for_node(int node_id) {
 	for (int i = 0; i < to_remove.size(); i += 4) {
 		remove_connection(to_remove[i], to_remove[i + 1], to_remove[i + 2], to_remove[i + 3]);
 	}
+}
+
+AudioStreamGraph::CompileResult AudioStreamGraph::compile() {
+	CompileResult result{};
+	_do_compile_traversal();
+	return result;
 }
 
 void AudioStreamGraph::_get_property_list(List<PropertyInfo> *r_props) const {
