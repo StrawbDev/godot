@@ -100,7 +100,7 @@ void AudioStreamGraph::add_connection(int from_node_id, int from_port_idx, int t
 }
 
 void AudioStreamGraph::remove_connection(int from_node_id, int from_port_idx, int to_node_id, int to_port_idx) {
-	Vector<ConnectionTuple> node_connections = m_connections[from_node_id];
+	Vector<ConnectionTuple> &node_connections = m_connections[from_node_id];
 	ConnectionTuple connection{ from_port_idx, to_node_id, to_port_idx };
 	int connection_idx = node_connections.find(connection);
 	if (connection_idx != -1) {
