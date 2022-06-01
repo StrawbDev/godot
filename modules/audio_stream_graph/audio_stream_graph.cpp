@@ -37,6 +37,7 @@ HashMap<int, Vector<AudioStreamGraph::ConnectionTuple>> AudioStreamGraph::_get_i
 }
 
 void AudioStreamGraph::_do_compile_traversal() const {
+	print_line("\nAudioStreamGraph starting traversal");
 	int start = _find_output_node();
 	HashMap<int, Vector<ConnectionTuple>> compile_graph = _get_inverted_connections_sorted();
 	Set<int> visited;
@@ -45,18 +46,23 @@ void AudioStreamGraph::_do_compile_traversal() const {
 
 	while (!to_visit.is_empty()) {
 		int current = to_visit.get(to_visit.size() - 1);
-		to_visit.remove_at(to_visit.size() - 1);
 
-		// emit_bytecode(current);
 		visited.insert(current);
-		print_line(vformat("AudioStreamGraph visited %d", current));
 
 		Vector<ConnectionTuple> connections = compile_graph[current];
+		bool added_to_visit = false;
 		for (const ConnectionTuple &connection : connections) {
 			int next = connection.to_node;
 			if (!visited.has(next)) {
 				to_visit.push_back(next);
+				added_to_visit = true;
 			}
+		}
+
+		if (!added_to_visit) {
+			to_visit.remove_at(to_visit.size() - 1);
+			// emit_bytecode(current);
+			print_line(vformat("AudioStreamGraph visited %d", current));
 		}
 	}
 }
