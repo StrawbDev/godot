@@ -40,7 +40,7 @@ void AudioStreamGraph::_do_compile_traversal(CompileResult &bytecode_out) {
 	print_line("\nAudioStreamGraph starting traversal");
 	int start = _find_output_node();
 	HashMap<int, Vector<ConnectionTuple>> compile_graph = _get_inverted_connections_sorted();
-	Set<int> visited;
+	HashSet<int> visited;
 	Vector<int> to_visit;
 	to_visit.push_back(start);
 
