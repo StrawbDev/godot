@@ -7,6 +7,32 @@
 class AudioStreamGraph : public AudioStream {
 	GDCLASS(AudioStreamGraph, AudioStream);
 
+public:
+	enum class Opcode {
+		PUSH_AUDIO,
+		PUSH_PARAM,
+		PUSH_CONST,
+
+		DUP,
+
+		MIX,
+		COPY_TO_OUTPUT,
+	};
+
+	struct Bytecode {
+		Opcode op;
+		union Operand {
+			float f;
+			int i;
+		} operand;
+	};
+
+	struct CompileResult {
+		bool ok = true;
+		Vector<Bytecode> bytecode;
+		Vector<Ref<AudioStream>> audio_inputs;
+	};
+
 private:
 	struct ConnectionTuple {
 		int from_port;
@@ -54,7 +80,8 @@ private:
 	void _on_sub_resource_changed();
 	int _find_output_node() const;
 	HashMap<int, Vector<ConnectionTuple>> _get_inverted_connections_sorted() const;
-	void _do_compile_traversal() const;
+	void _do_compile_traversal(CompileResult &bytecode_out);
+	void _add_bytecode(int node_id, CompileResult &bytecode_out);
 
 protected:
 	static void _bind_methods();
@@ -84,30 +111,6 @@ public:
 
 	PackedInt32Array get_connections_for_node(int node_id) const;
 	void remove_connections_for_node(int node_id);
-
-	enum class Opcode {
-		PUSH_AUDIO,
-		PUSH_PARAM,
-		PUSH_CONST,
-
-		MIX,
-		COPY,
-		DAMPEN,
-	};
-
-	struct Bytecode {
-		Opcode op;
-		union Operand {
-			float f;
-			int i;
-			bool out_flag;
-		} operand;
-	};
-
-	struct CompileResult {
-		Vector<Bytecode> bytecode;
-		Vector<Ref<AudioStream>> audio_inputs;
-	};
 	CompileResult compile();
 };
 

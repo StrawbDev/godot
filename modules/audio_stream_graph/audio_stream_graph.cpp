@@ -36,7 +36,7 @@ HashMap<int, Vector<AudioStreamGraph::ConnectionTuple>> AudioStreamGraph::_get_i
 	return result;
 }
 
-void AudioStreamGraph::_do_compile_traversal() const {
+void AudioStreamGraph::_do_compile_traversal(CompileResult &bytecode_out) {
 	print_line("\nAudioStreamGraph starting traversal");
 	int start = _find_output_node();
 	HashMap<int, Vector<ConnectionTuple>> compile_graph = _get_inverted_connections_sorted();
@@ -61,9 +61,59 @@ void AudioStreamGraph::_do_compile_traversal() const {
 
 		if (!added_to_visit) {
 			to_visit.remove_at(to_visit.size() - 1);
-			// emit_bytecode(current);
+			int out_degree = m_connections[current].size();
+			_add_bytecode(current, bytecode_out);
+			for (int i = 1; i < out_degree; i++) {
+				Bytecode dup = Bytecode{ Opcode::DUP };
+				dup.operand.i = 0;
+				bytecode_out.bytecode.push_back(dup);
+			}
 			print_line(vformat("AudioStreamGraph visited %d", current));
 		}
+	}
+}
+
+void AudioStreamGraph::_add_bytecode(int node_id, CompileResult &bytecode_out) {
+	Ref<AudioStreamGraphNode> node = get_node(node_id);
+	if (node.is_null()) {
+		bytecode_out.ok = false;
+		ERR_FAIL_MSG(TTR("Encountered nonexistent node while compiling"));
+	}
+
+	StringName node_class = node->get_class_name();
+	if (node_class == "AudioStreamGraphNodeOutput") {
+		bytecode_out.bytecode.push_back(Bytecode{ Opcode::COPY_TO_OUTPUT });
+	} else if (node_class == "AudioStreamGraphNodeStream") {
+		Ref<AudioStreamGraphNodeStream> stream_node = node;
+		Ref<AudioStream> stream = stream_node->get_stream();
+		if (stream.is_null()) {
+			bytecode_out.ok = false;
+			ERR_FAIL_MSG(TTR("Encountered null AudioStream during compilation"));
+		}
+
+		int stream_id = bytecode_out.audio_inputs.size();
+		Bytecode instruction = Bytecode{ Opcode::PUSH_AUDIO };
+		instruction.operand.i = stream_id;
+		bytecode_out.audio_inputs.push_back(stream);
+		bytecode_out.bytecode.push_back(instruction);
+	} else if (node_class == "AudioStreamGraphNodeMix") {
+		Ref<AudioStreamGraphNodeMix> mix_node = node;
+		float mix1 = mix_node->get_mix1();
+		float mix2 = mix_node->get_mix2();
+
+		Bytecode mix1_instr = Bytecode{ Opcode::PUSH_CONST };
+		mix1_instr.operand.f = mix1;
+		bytecode_out.bytecode.push_back(mix1_instr);
+
+		Bytecode mix2_instr = Bytecode{ Opcode::PUSH_CONST };
+		mix2_instr.operand.f = mix2;
+		bytecode_out.bytecode.push_back(mix2_instr);
+
+		Bytecode mix_opcode = Bytecode{ Opcode::MIX };
+		bytecode_out.bytecode.push_back(mix_opcode);
+	} else {
+		bytecode_out.ok = false;
+		ERR_FAIL_MSG(TTR("Encountered unknown node type while compiling"));
 	}
 }
 
@@ -218,7 +268,37 @@ void AudioStreamGraph::remove_connections_for_node(int node_id) {
 
 AudioStreamGraph::CompileResult AudioStreamGraph::compile() {
 	CompileResult result{};
-	_do_compile_traversal();
+	_do_compile_traversal(result);
+	if (result.ok) {
+		print_line("AUDIO INPUT DUMP:");
+		for (const Ref<AudioStream> &input : result.audio_inputs) {
+			print_line(input);
+		}
+
+		print_line("BYTECODE DUMP:");
+		for (const Bytecode &code : result.bytecode) {
+			switch (code.op) {
+				case Opcode::PUSH_AUDIO:
+					print_line(vformat("PUSH_AUDIO %d", code.operand.i));
+					break;
+				case Opcode::PUSH_PARAM:
+					print_line(vformat("PUSH_PARAM %d", code.operand.i));
+					break;
+				case Opcode::PUSH_CONST:
+					print_line(vformat("PUSH_CONST %f", code.operand.f));
+					break;
+				case Opcode::DUP:
+					print_line("DUP");
+					break;
+				case Opcode::MIX:
+					print_line("MIX");
+					break;
+				case Opcode::COPY_TO_OUTPUT:
+					print_line("COPY_TO_OUTPUT");
+					break;
+			}
+		}
+	}
 	return result;
 }
 
