@@ -11,8 +11,36 @@ private:
 	uint64_t m_position = 0;
 	bool m_playing = false;
 
-	Vector<AudioStreamGraph::Bytecode> m_bytecode;
-	Vector<Ref<AudioStream>> m_audio_inputs;
+	AudioStreamGraph::CompileResult m_program;
+
+	using Buffer = AudioFrame[512];
+	int m_current_buffer = 0;
+	Buffer m_buffers[16];
+	Vector<Ref<AudioStreamPlayback>> m_input_playbacks;
+
+	enum StackValueType {
+		STACK_VALUE_INVALID,
+		STACK_VALUE_AUDIO_REF,
+		STACK_VALUE_FLOAT,
+	};
+
+	struct StackValue {
+		StackValueType type;
+		union Inner {
+			int i;
+			float f;
+		} value;
+	};
+	Vector<StackValue> m_program_stack;
+
+	StackValue _pop();
+
+	void _op_copy_to_output(const AudioStreamGraph::Bytecode &instruction, AudioFrame *output, int offset, int num_frames);
+	void _op_dup(const AudioStreamGraph::Bytecode &instruction);
+	void _op_mix(const AudioStreamGraph::Bytecode &instruction);
+	void _op_push_audio(const AudioStreamGraph::Bytecode &instruction);
+	void _op_push_const(const AudioStreamGraph::Bytecode &instruction);
+	void _op_push_param(const AudioStreamGraph::Bytecode &instruction);
 
 public:
 	int get_sample_rate() const;
