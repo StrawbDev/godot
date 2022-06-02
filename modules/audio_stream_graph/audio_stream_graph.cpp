@@ -64,9 +64,10 @@ void AudioStreamGraph::_do_compile_traversal(CompileResult &bytecode_out) {
 			int out_degree = m_connections[current].size();
 			_add_bytecode(current, bytecode_out);
 			for (int i = 1; i < out_degree; i++) {
-				Bytecode dup = Bytecode{ Opcode::DUP };
-				dup.operand.i = 0;
-				bytecode_out.bytecode.push_back(dup);
+				Bytecode dup_op;
+				dup_op.op = Opcode::DUP;
+				dup_op.operand.i = 0;
+				bytecode_out.bytecode.push_back(dup_op);
 			}
 			print_line(vformat("AudioStreamGraph visited %d", current));
 		}
@@ -82,7 +83,10 @@ void AudioStreamGraph::_add_bytecode(int node_id, CompileResult &bytecode_out) {
 
 	StringName node_class = node->get_class_name();
 	if (node_class == "AudioStreamGraphNodeOutput") {
-		bytecode_out.bytecode.push_back(Bytecode{ Opcode::COPY_TO_OUTPUT });
+		Bytecode copy_op;
+		copy_op.op = Opcode::COPY_TO_OUTPUT;
+		copy_op.operand.i = 0;
+		bytecode_out.bytecode.push_back(copy_op);
 	} else if (node_class == "AudioStreamGraphNodeStream") {
 		Ref<AudioStreamGraphNodeStream> stream_node = node;
 		Ref<AudioStream> stream = stream_node->get_stream();
@@ -92,25 +96,30 @@ void AudioStreamGraph::_add_bytecode(int node_id, CompileResult &bytecode_out) {
 		}
 
 		int stream_id = bytecode_out.audio_inputs.size();
-		Bytecode instruction = Bytecode{ Opcode::PUSH_AUDIO };
-		instruction.operand.i = stream_id;
+		Bytecode push_op;
+		push_op.op = Opcode::PUSH_AUDIO;
+		push_op.operand.i = stream_id;
 		bytecode_out.audio_inputs.push_back(stream);
-		bytecode_out.bytecode.push_back(instruction);
+		bytecode_out.bytecode.push_back(push_op);
 	} else if (node_class == "AudioStreamGraphNodeMix") {
 		Ref<AudioStreamGraphNodeMix> mix_node = node;
 		float mix1 = mix_node->get_mix1();
 		float mix2 = mix_node->get_mix2();
 
-		Bytecode mix1_instr = Bytecode{ Opcode::PUSH_CONST };
-		mix1_instr.operand.f = mix1;
-		bytecode_out.bytecode.push_back(mix1_instr);
+		Bytecode mix1_push_op;
+		mix1_push_op.op = Opcode::PUSH_CONST;
+		mix1_push_op.operand.f = mix1;
+		bytecode_out.bytecode.push_back(mix1_push_op);
 
-		Bytecode mix2_instr = Bytecode{ Opcode::PUSH_CONST };
-		mix2_instr.operand.f = mix2;
-		bytecode_out.bytecode.push_back(mix2_instr);
+		Bytecode mix2_push_op;
+		mix2_push_op.op = Opcode::PUSH_CONST;
+		mix2_push_op.operand.f = mix2;
+		bytecode_out.bytecode.push_back(mix2_push_op);
 
-		Bytecode mix_opcode = Bytecode{ Opcode::MIX };
-		bytecode_out.bytecode.push_back(mix_opcode);
+		Bytecode mix_op;
+		mix_op.op = Opcode::MIX;
+		mix_op.operand.i = 0;
+		bytecode_out.bytecode.push_back(mix_op);
 	} else {
 		bytecode_out.ok = false;
 		ERR_FAIL_MSG(TTR("Encountered unknown node type while compiling"));
@@ -118,7 +127,7 @@ void AudioStreamGraph::_add_bytecode(int node_id, CompileResult &bytecode_out) {
 }
 
 Ref<AudioStreamPlayback> AudioStreamGraph::instance_playback() {
-	compile();
+	print_line("DEBUG: AudioStreamPlaybackGraph instanced");
 	Ref<AudioStreamPlaybackGraph> playback;
 	playback.instantiate();
 	playback->set_resource(this);
