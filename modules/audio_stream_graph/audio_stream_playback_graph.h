@@ -35,9 +35,12 @@ private:
 
 	StackValue _pop();
 
+	bool m_execution_ok;
+	void _run_program(AudioFrame *buffer, float rate_scale, int num_frames);
+
 	void _op_copy_to_output(const AudioStreamGraph::Bytecode &instruction, AudioFrame *output, int offset, int num_frames);
 	void _op_dup(const AudioStreamGraph::Bytecode &instruction);
-	void _op_mix(const AudioStreamGraph::Bytecode &instruction);
+	void _op_mix(const AudioStreamGraph::Bytecode &instruction, int num_frames);
 	void _op_push_audio(const AudioStreamGraph::Bytecode &instruction);
 	void _op_push_const(const AudioStreamGraph::Bytecode &instruction);
 	void _op_push_param(const AudioStreamGraph::Bytecode &instruction);

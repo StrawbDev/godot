@@ -47,17 +47,9 @@ void AudioStreamPlaybackGraph::seek(float p_time) {
 	}
 }
 
-int AudioStreamPlaybackGraph::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
+void AudioStreamPlaybackGraph::_run_program(AudioFrame *buffer, float rate_scale, int num_frames) {
 	using Opcode = AudioStreamGraph::Opcode;
-
-	if (m_resource.is_null() || !m_program.ok || !m_playing) {
-		for (int i = 0; i < p_frames; i++) {
-			p_buffer[i] = AudioFrame{ 0, 0 };
-		}
-		return p_frames;
-	}
-
-	int total_frames = p_frames;
+	int total_frames = num_frames;
 	int to_mix = total_frames;
 	int offset = 0;
 
@@ -66,14 +58,18 @@ int AudioStreamPlaybackGraph::mix(AudioFrame *p_buffer, float p_rate_scale, int 
 
 		m_current_buffer = 0;
 		for (Ref<AudioStreamPlayback> &input : m_input_playbacks) {
-			input->mix(m_buffers[m_current_buffer], p_rate_scale, next_size);
+			input->mix(m_buffers[m_current_buffer], rate_scale, next_size);
 			m_current_buffer++;
 		}
 
 		for (const AudioStreamGraph::Bytecode &instruction : m_program.bytecode) {
+			if (!m_execution_ok) {
+				break;
+			}
+
 			switch (instruction.op) {
 				case Opcode::COPY_TO_OUTPUT:
-					_op_copy_to_output(instruction, p_buffer, offset, next_size);
+					_op_copy_to_output(instruction, buffer, offset, next_size);
 					break;
 
 				case Opcode::DUP:
@@ -81,7 +77,7 @@ int AudioStreamPlaybackGraph::mix(AudioFrame *p_buffer, float p_rate_scale, int 
 					break;
 
 				case Opcode::MIX:
-					_op_mix(instruction);
+					_op_mix(instruction, next_size);
 					break;
 
 				case Opcode::PUSH_AUDIO:
@@ -101,8 +97,22 @@ int AudioStreamPlaybackGraph::mix(AudioFrame *p_buffer, float p_rate_scale, int 
 		to_mix -= next_size;
 		offset += next_size;
 	}
+}
 
-	return total_frames;
+int AudioStreamPlaybackGraph::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
+	m_execution_ok = true;
+
+	if (m_resource.is_null() || !m_program.ok || !m_playing) {
+		m_execution_ok = false;
+	}
+
+	_run_program(p_buffer, p_rate_scale, p_frames);
+
+	if (!m_execution_ok) {
+		memset(p_buffer, 0, sizeof(AudioFrame) * p_frames);
+	}
+
+	return p_frames;
 }
 
 AudioStreamPlaybackGraph::StackValue AudioStreamPlaybackGraph::_pop() {
@@ -110,6 +120,7 @@ AudioStreamPlaybackGraph::StackValue AudioStreamPlaybackGraph::_pop() {
 		StackValue result;
 		result.type = STACK_VALUE_INVALID;
 		result.value.i = 0;
+		m_execution_ok = false;
 		return result;
 	}
 
@@ -123,6 +134,8 @@ void AudioStreamPlaybackGraph::_op_copy_to_output(const AudioStreamGraph::Byteco
 	if (op.type == STACK_VALUE_AUDIO_REF) {
 		int to_copy = op.value.i;
 		memcpy(output + offset, m_buffers[to_copy], num_frames * sizeof(AudioFrame));
+	} else {
+		m_execution_ok = false;
 	}
 }
 
@@ -132,15 +145,27 @@ void AudioStreamPlaybackGraph::_op_dup(const AudioStreamGraph::Bytecode &instruc
 	m_program_stack.push_back(dup);
 }
 
-void AudioStreamPlaybackGraph::_op_mix(const AudioStreamGraph::Bytecode &instruction) {
-	StackValue audio1 = _pop();
-	StackValue audio2 = _pop();
-	StackValue mix1 = _pop();
+void AudioStreamPlaybackGraph::_op_mix(const AudioStreamGraph::Bytecode &instruction, int num_frames) {
 	StackValue mix2 = _pop();
-	// TODO
+	StackValue mix1 = _pop();
+	StackValue audio2 = _pop();
+	StackValue audio1 = _pop();
+
+	int result_buffer = m_current_buffer;
+	m_current_buffer++;
+
+	AudioFrame *audio1_buf = m_buffers[audio1.value.i];
+	AudioFrame *audio2_buf = m_buffers[audio2.value.i];
+	AudioFrame *result_buf = m_buffers[result_buffer];
+
+	for (int i = 0; i < num_frames; i++) {
+		result_buf[i] = mix1.value.f * audio1_buf[i];
+		result_buf[i] += mix2.value.f * audio2_buf[i];
+	}
+
 	StackValue result;
 	result.type = STACK_VALUE_AUDIO_REF;
-	result.value.i = 0;
+	result.value.i = result_buffer;
 	m_program_stack.push_back(result);
 }
 
