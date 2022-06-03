@@ -146,10 +146,10 @@ void AudioStreamPlaybackGraph::_op_dup(const AudioStreamGraph::Bytecode &instruc
 }
 
 void AudioStreamPlaybackGraph::_op_mix(const AudioStreamGraph::Bytecode &instruction, int num_frames) {
-	StackValue mix2 = _pop();
-	StackValue mix1 = _pop();
 	StackValue audio2 = _pop();
+	StackValue mix2 = _pop();
 	StackValue audio1 = _pop();
+	StackValue mix1 = _pop();
 
 	int result_buffer = m_current_buffer;
 	m_current_buffer++;

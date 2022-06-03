@@ -38,6 +38,27 @@ void AudioStreamGraphNodeStream::_bind_methods() {
 //////////////////////////
 // AudioStreamGraphNodeMix
 
+int AudioStreamGraphNodeMix::get_num_input_ports() const {
+	return 4;
+}
+
+PackedInt32Array AudioStreamGraphNodeMix::get_optional_input_ports() const {
+	PackedInt32Array result;
+	result.push_back(0);
+	result.push_back(2);
+	return result;
+}
+
+float AudioStreamGraphNodeMix::get_input_port_default_value(int port) const {
+	if (port == 0) {
+		return get_mix1();
+	} else if (port == 2) {
+		return get_mix2();
+	} else {
+		ERR_FAIL_V_MSG(0, TTR("Port does not have a default value"));
+	}
+}
+
 void AudioStreamGraphNodeMix::set_mix1(float amount) {
 	m_mix1 = amount;
 }

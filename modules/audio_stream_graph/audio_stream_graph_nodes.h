@@ -15,6 +15,10 @@ protected:
 public:
 	Vector2 get_position() const;
 	void set_position(Vector2 position);
+
+	virtual int get_num_input_ports() const { return 0; }
+	virtual PackedInt32Array get_optional_input_ports() const { return PackedInt32Array(); }
+	virtual float get_input_port_default_value(int port) const { return 0; }
 };
 
 class AudioStreamGraphNodeStream : public AudioStreamGraphNode {
@@ -33,6 +37,9 @@ public:
 
 class AudioStreamGraphNodeOutput : public AudioStreamGraphNode {
 	GDCLASS(AudioStreamGraphNodeOutput, AudioStreamGraphNode);
+
+public:
+	virtual int get_num_input_ports() const override { return 1; }
 };
 
 class AudioStreamGraphNodeMix : public AudioStreamGraphNode {
@@ -46,6 +53,10 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual int get_num_input_ports() const override;
+	virtual PackedInt32Array get_optional_input_ports() const override;
+	virtual float get_input_port_default_value(int port) const override;
+
 	void set_mix1(float amount);
 	float get_mix1() const;
 

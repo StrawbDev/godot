@@ -36,42 +36,38 @@ HashMap<int, Vector<AudioStreamGraph::ConnectionTuple>> AudioStreamGraph::_get_i
 	return result;
 }
 
-void AudioStreamGraph::_do_compile_traversal(CompileResult &bytecode_out) {
-	print_line("\nAudioStreamGraph starting traversal");
-	int start = _find_output_node();
-	HashMap<int, Vector<ConnectionTuple>> compile_graph = _get_inverted_connections_sorted();
-	HashSet<int> visited;
-	Vector<int> to_visit;
-	to_visit.push_back(start);
-
-	while (!to_visit.is_empty()) {
-		int current = to_visit.get(to_visit.size() - 1);
-
-		visited.insert(current);
-
-		Vector<ConnectionTuple> connections = compile_graph[current];
-		bool added_to_visit = false;
+void AudioStreamGraph::_do_compile_traversal(int current, const HashMap<int, Vector<ConnectionTuple>> &compile_graph, CompileResult &bytecode_out) {
+	Vector<ConnectionTuple> connections = compile_graph.has(current) ? compile_graph[current] : Vector<ConnectionTuple>();
+	Ref<AudioStreamGraphNode> node = get_node(current);
+	ERR_FAIL_COND_MSG(node.is_null(), "Encountered a nonexistent node during compilation");
+	int num_inputs = node->get_num_input_ports();
+	PackedInt32Array optional_inputs = node->get_optional_input_ports();
+	for (int port = 0; port < num_inputs; port++) {
+		ConnectionTuple current_connection;
+		bool has_current_connection = false;
 		for (const ConnectionTuple &connection : connections) {
-			int next = connection.to_node;
-			if (!visited.has(next)) {
-				to_visit.push_back(next);
-				added_to_visit = true;
+			if (connection.from_port == port) {
+				current_connection = connection;
+				has_current_connection = true;
+				break;
 			}
 		}
 
-		if (!added_to_visit) {
-			to_visit.remove_at(to_visit.size() - 1);
-			int out_degree = m_connections[current].size();
-			_add_bytecode(current, bytecode_out);
-			for (int i = 1; i < out_degree; i++) {
-				Bytecode dup_op;
-				dup_op.op = Opcode::DUP;
-				dup_op.operand.i = 0;
-				bytecode_out.bytecode.push_back(dup_op);
-			}
-			print_line(vformat("AudioStreamGraph visited %d", current));
+		if (!has_current_connection && optional_inputs.has(port)) {
+			float default_value = node->get_input_port_default_value(port);
+			Bytecode default_op;
+			default_op.op = Opcode::PUSH_CONST;
+			default_op.operand.f = default_value;
+			bytecode_out.bytecode.push_back(default_op);
+		} else if (!has_current_connection) {
+			ERR_FAIL_MSG(TTR("A required input connection is missing"));
+		} else {
+			int next = current_connection.to_node;
+			_do_compile_traversal(next, compile_graph, bytecode_out);
 		}
 	}
+	print_line("AudioStreamGraph visited ", current);
+	_add_bytecode(current, bytecode_out);
 }
 
 void AudioStreamGraph::_add_bytecode(int node_id, CompileResult &bytecode_out) {
@@ -102,20 +98,6 @@ void AudioStreamGraph::_add_bytecode(int node_id, CompileResult &bytecode_out) {
 		bytecode_out.audio_inputs.push_back(stream);
 		bytecode_out.bytecode.push_back(push_op);
 	} else if (node_class == "AudioStreamGraphNodeMix") {
-		Ref<AudioStreamGraphNodeMix> mix_node = node;
-		float mix1 = mix_node->get_mix1();
-		float mix2 = mix_node->get_mix2();
-
-		Bytecode mix1_push_op;
-		mix1_push_op.op = Opcode::PUSH_CONST;
-		mix1_push_op.operand.f = mix1;
-		bytecode_out.bytecode.push_back(mix1_push_op);
-
-		Bytecode mix2_push_op;
-		mix2_push_op.op = Opcode::PUSH_CONST;
-		mix2_push_op.operand.f = mix2;
-		bytecode_out.bytecode.push_back(mix2_push_op);
-
 		Bytecode mix_op;
 		mix_op.op = Opcode::MIX;
 		mix_op.operand.i = 0;
@@ -277,7 +259,10 @@ void AudioStreamGraph::remove_connections_for_node(int node_id) {
 
 AudioStreamGraph::CompileResult AudioStreamGraph::compile() {
 	CompileResult result{};
-	_do_compile_traversal(result);
+	int start = _find_output_node();
+	HashMap<int, Vector<ConnectionTuple>> compile_graph = _get_inverted_connections_sorted();
+	print_line("\nAudioStreamGraph starting traversal");
+	_do_compile_traversal(start, compile_graph, result);
 	if (result.ok) {
 		print_line("AUDIO INPUT DUMP:");
 		for (const Ref<AudioStream> &input : result.audio_inputs) {

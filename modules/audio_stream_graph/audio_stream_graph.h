@@ -80,7 +80,7 @@ private:
 	void _on_sub_resource_changed();
 	int _find_output_node() const;
 	HashMap<int, Vector<ConnectionTuple>> _get_inverted_connections_sorted() const;
-	void _do_compile_traversal(CompileResult &bytecode_out);
+	void _do_compile_traversal(int current, const HashMap<int, Vector<ConnectionTuple>> &compile_graph, CompileResult &bytecode_out);
 	void _add_bytecode(int node_id, CompileResult &bytecode_out);
 
 protected:
