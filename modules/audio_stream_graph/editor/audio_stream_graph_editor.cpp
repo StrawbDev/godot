@@ -49,7 +49,7 @@ void AudioStreamGraphEditor::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 	Ref<InputEventMouseButton> mouse_event = p_event;
 	if (mouse_event.is_valid() && mouse_event->get_button_index() == MouseButton::RIGHT && !mouse_event->is_pressed()) {
-		AudioStreamGraphEditorNodeMix *editor_node = memnew(AudioStreamGraphEditorNodeMix);
+		AudioStreamGraphEditorNodeParameter *editor_node = memnew(AudioStreamGraphEditorNodeParameter);
 		String resource_class = editor_node->get_node_resource_type();
 		AudioStreamGraphNode *node_resource = Object::cast_to<AudioStreamGraphNode>(ClassDB::instantiate(resource_class));
 		ERR_FAIL_COND(node_resource == nullptr);
@@ -88,6 +88,10 @@ void AudioStreamGraphEditor::edit(AudioStreamGraph *resource) {
 			editor_node = memnew(AudioStreamGraphEditorNodeOutput);
 		} else if (node_class == "AudioStreamGraphNodeMix") {
 			editor_node = memnew(AudioStreamGraphEditorNodeMix);
+		} else if (node_class == "AudioStreamGraphNodeParameter") {
+			AudioStreamGraphEditorNodeParameter *param_node = memnew(AudioStreamGraphEditorNodeParameter);
+			param_node->set_valid_parameter_names(m_current_resource->get_parameter_names());
+			editor_node = param_node;
 		} else {
 			ERR_FAIL_MSG(vformat("Can't edit unknown AudioStreamGraphNode type %s", node_class));
 		}

@@ -304,6 +304,14 @@ void AudioStreamGraph::remove_parameter(StringName name) {
 	m_parameters.erase(name);
 }
 
+PackedStringArray AudioStreamGraph::get_parameter_names() {
+	PackedStringArray result;
+	for (const KeyValue<StringName, float> &parameter : m_parameters) {
+		result.push_back(parameter.key);
+	}
+	return result;
+}
+
 void AudioStreamGraph::_get_property_list(List<PropertyInfo> *r_props) const {
 	for (const KeyValue<int, Ref<AudioStreamGraphNode>> &entry : m_nodes) {
 		StringName name = vformat("nodes/%d", entry.key);

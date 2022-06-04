@@ -117,6 +117,7 @@ public:
 
 	void add_parameter(StringName name, float default_value);
 	void remove_parameter(StringName name);
+	PackedStringArray get_parameter_names();
 };
 
 #endif // AUDIO_STREAM_GRAPH_H

@@ -21,6 +21,8 @@ public:
 	virtual float get_input_port_default_value(int port) const { return 0; }
 };
 
+/////////////////////
+
 class AudioStreamGraphNodeStream : public AudioStreamGraphNode {
 	GDCLASS(AudioStreamGraphNodeStream, AudioStreamGraphNode);
 
@@ -35,12 +37,16 @@ public:
 	void set_stream(Ref<AudioStream> stream);
 };
 
+////////////////////////
+
 class AudioStreamGraphNodeOutput : public AudioStreamGraphNode {
 	GDCLASS(AudioStreamGraphNodeOutput, AudioStreamGraphNode);
 
 public:
 	virtual int get_num_input_ports() const override { return 1; }
 };
+
+//////////////////////////
 
 class AudioStreamGraphNodeMix : public AudioStreamGraphNode {
 	GDCLASS(AudioStreamGraphNodeMix, AudioStreamGraphNode);
@@ -62,6 +68,22 @@ public:
 
 	void set_mix2(float amount);
 	float get_mix2() const;
+};
+
+//////////////////////////
+
+class AudioStreamGraphNodeParameter : public AudioStreamGraphNode {
+	GDCLASS(AudioStreamGraphNodeParameter, AudioStreamGraphNode);
+
+private:
+	StringName m_parameter_name;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_parameter_name(StringName name);
+	StringName get_parameter_name() const;
 };
 
 #endif

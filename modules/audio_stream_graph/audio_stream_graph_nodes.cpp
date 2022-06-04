@@ -83,3 +83,21 @@ void AudioStreamGraphNodeMix::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_mix2"), &AudioStreamGraphNodeMix::get_mix2);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mix2"), "set_mix2", "get_mix2");
 }
+
+///////////////////////
+// AudioStreamGraphNodeParameter
+
+void AudioStreamGraphNodeParameter::set_parameter_name(StringName name) {
+	m_parameter_name = name;
+	emit_changed();
+}
+
+StringName AudioStreamGraphNodeParameter::get_parameter_name() const {
+	return m_parameter_name;
+}
+
+void AudioStreamGraphNodeParameter::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_parameter_name", "name"), &AudioStreamGraphNodeParameter::set_parameter_name);
+	ClassDB::bind_method(D_METHOD("get_parameter_name"), &AudioStreamGraphNodeParameter::get_parameter_name);
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "parameter_name"), "set_parameter_name", "get_parameter_name");
+}

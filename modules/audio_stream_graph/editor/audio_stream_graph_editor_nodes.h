@@ -5,6 +5,7 @@
 #include "core/object/undo_redo.h"
 #include "editor/editor_resource_picker.h"
 #include "scene/gui/graph_node.h"
+#include "scene/gui/option_button.h"
 
 // AudioStreamGraphEditorNode
 
@@ -83,6 +84,28 @@ public:
 	virtual Ref<AudioStreamGraphNode> get_node_resource() const override;
 
 	AudioStreamGraphEditorNodeMix();
+};
+
+//////////////////////////////////
+// AudioStreamGraphEditorNodeParameter
+
+class AudioStreamGraphEditorNodeParameter : public AudioStreamGraphEditorNode {
+	GDCLASS(AudioStreamGraphEditorNodeParameter, AudioStreamGraphEditorNode);
+
+private:
+	Ref<AudioStreamGraphNodeParameter> m_node_resource;
+	OptionButton *m_selector;
+
+	void _on_parameter_name_selected(int index);
+
+public:
+	virtual String get_node_resource_type() override;
+	virtual void set_node_resource(Ref<AudioStreamGraphNode> node_resource) override;
+	virtual Ref<AudioStreamGraphNode> get_node_resource() const override;
+
+	void set_valid_parameter_names(PackedStringArray names);
+
+	AudioStreamGraphEditorNodeParameter();
 };
 
 #endif // AUDIO_STREAM_GRAPH_EDITOR_NODES_H

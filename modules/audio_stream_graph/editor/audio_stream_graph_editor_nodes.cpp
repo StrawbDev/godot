@@ -166,3 +166,44 @@ AudioStreamGraphEditorNodeMix::AudioStreamGraphEditorNodeMix() {
 	set_slot_type_right(0, AudioStreamGraphEditor::SLOT_TYPE_AUDIO);
 	set_slot_color_right(0, AudioStreamGraphEditor::SLOT_COLOR_AUDIO);
 }
+
+/////////////////////////////////////
+// AudioStreamGraphEditorNodeParameter
+
+void AudioStreamGraphEditorNodeParameter::_on_parameter_name_selected(int index) {
+	StringName new_name = m_selector->get_item_text(index);
+	StringName previous_name = m_node_resource->get_parameter_name();
+	m_undo_redo->create_action(TTR("Set Parameter Name"));
+	m_undo_redo->add_do_property(m_node_resource.ptr(), "parameter_name", new_name);
+	m_undo_redo->add_undo_property(m_node_resource.ptr(), "parameter_name", previous_name);
+	m_undo_redo->commit_action();
+}
+
+String AudioStreamGraphEditorNodeParameter::get_node_resource_type() {
+	return "AudioStreamGraphNodeParameter";
+}
+
+void AudioStreamGraphEditorNodeParameter::set_node_resource(Ref<AudioStreamGraphNode> node_resource) {
+	m_node_resource = node_resource;
+}
+
+Ref<AudioStreamGraphNode> AudioStreamGraphEditorNodeParameter::get_node_resource() const {
+	return m_node_resource;
+}
+
+void AudioStreamGraphEditorNodeParameter::set_valid_parameter_names(PackedStringArray names) {
+	m_selector->clear();
+	for (const String &name : names) {
+		m_selector->add_item(name);
+	}
+}
+
+AudioStreamGraphEditorNodeParameter::AudioStreamGraphEditorNodeParameter() {
+	set_title(TTR("Parameter"));
+	m_selector = memnew(OptionButton);
+	m_selector->connect("item_selected", callable_mp(this, &AudioStreamGraphEditorNodeParameter::_on_parameter_name_selected));
+	add_child(m_selector);
+	set_slot_enabled_right(0, true);
+	set_slot_type_right(0, AudioStreamGraphEditor::SLOT_TYPE_CONTROL);
+	set_slot_color_right(0, AudioStreamGraphEditor::SLOT_COLOR_CONTROL);
+}
