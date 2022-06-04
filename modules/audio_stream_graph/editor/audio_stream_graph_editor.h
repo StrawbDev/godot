@@ -14,9 +14,11 @@ private:
 	UndoRedo *m_undo_redo = nullptr;
 	GraphEdit *m_graph = nullptr;
 	AudioStreamGraph *m_current_resource = nullptr;
+	Button *m_add_param_button = nullptr;
 
 	void _on_connection_request(StringName from, int from_slot, StringName to, int to_slot);
 	void _on_disconnection_request(StringName from, int from_slot, StringName to, int to_slot);
+	void _on_add_parameter_pressed();
 
 protected:
 	static void _bind_methods();

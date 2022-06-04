@@ -296,10 +296,22 @@ AudioStreamGraph::CompileResult AudioStreamGraph::compile() {
 	return result;
 }
 
+void AudioStreamGraph::add_parameter(StringName name, float default_value) {
+	m_parameters[name] = default_value;
+}
+
+void AudioStreamGraph::remove_parameter(StringName name) {
+	m_parameters.erase(name);
+}
+
 void AudioStreamGraph::_get_property_list(List<PropertyInfo> *r_props) const {
 	for (const KeyValue<int, Ref<AudioStreamGraphNode>> &entry : m_nodes) {
 		StringName name = vformat("nodes/%d", entry.key);
 		r_props->push_back(PropertyInfo(Variant::OBJECT, name, PROPERTY_HINT_RESOURCE_TYPE, "AudioStreamGraphNode", PROPERTY_USAGE_NO_EDITOR));
+	}
+	for (const KeyValue<StringName, float> &parameter : m_parameters) {
+		StringName name = vformat("parameters/%s", parameter.key);
+		r_props->push_back(PropertyInfo(Variant::FLOAT, name));
 	}
 }
 
@@ -309,6 +321,14 @@ bool AudioStreamGraph::_get(const StringName &p_property, Variant &r_value) cons
 		int id = name.get_slicec('/', 1).to_int();
 		r_value = get_node(id);
 		return true;
+	} else if (name.begins_with("parameters/")) {
+		StringName param_name = name.get_slicec('/', 1);
+		if (m_parameters.has(param_name)) {
+			r_value = m_parameters[param_name];
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	return false;
@@ -319,6 +339,10 @@ bool AudioStreamGraph::_set(const StringName &p_property, const Variant &p_value
 	if (name.begins_with("nodes/")) {
 		int id = name.get_slicec('/', 1).to_int();
 		set_node(id, p_value);
+		return true;
+	} else if (name.begins_with("parameters/")) {
+		StringName param_name = name.get_slicec('/', 1);
+		m_parameters[param_name] = p_value;
 		return true;
 	}
 
@@ -338,4 +362,7 @@ void AudioStreamGraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_node", "node_idx"), &AudioStreamGraph::remove_node);
 	ClassDB::bind_method(D_METHOD("set_node", "node_idx", "node"), &AudioStreamGraph::set_node);
 	ClassDB::bind_method(D_METHOD("get_node", "node_idx"), &AudioStreamGraph::get_node);
+
+	ClassDB::bind_method(D_METHOD("add_parameter", "name", "default_value"), &AudioStreamGraph::add_parameter);
+	ClassDB::bind_method(D_METHOD("remove_parameter", "name"), &AudioStreamGraph::remove_parameter);
 }

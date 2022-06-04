@@ -34,6 +34,17 @@ void AudioStreamGraphEditor::_on_disconnection_request(StringName from, int from
 	m_undo_redo->commit_action();
 }
 
+void AudioStreamGraphEditor::_on_add_parameter_pressed() {
+	static int test = 0;
+	ERR_FAIL_COND(m_current_resource == nullptr);
+	StringName name = vformat("test%d", test);
+	m_undo_redo->create_action(TTR("Add Parameter"));
+	m_undo_redo->add_do_method(m_current_resource, "add_parameter", name, 0.0);
+	m_undo_redo->add_undo_method(m_current_resource, "remove_parameter", name);
+	m_undo_redo->commit_action();
+	test++;
+}
+
 void AudioStreamGraphEditor::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 	Ref<InputEventMouseButton> mouse_event = p_event;
@@ -131,6 +142,11 @@ AudioStreamGraphEditor::AudioStreamGraphEditor() {
 	m_graph->connect("connection_request", callable_mp(this, &AudioStreamGraphEditor::_on_connection_request));
 	m_graph->connect("disconnection_request", callable_mp(this, &AudioStreamGraphEditor::_on_disconnection_request));
 	add_child(m_graph);
+
+	m_add_param_button = memnew(Button);
+	m_add_param_button->set_text(TTR("Add Parameter"));
+	m_add_param_button->connect("pressed", callable_mp(this, &AudioStreamGraphEditor::_on_add_parameter_pressed));
+	m_graph->get_zoom_hbox()->add_child(m_add_param_button);
 }
 
 void AudioStreamGraphEditor::set_undo_redo(UndoRedo *undo_redo) {

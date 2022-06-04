@@ -77,6 +77,8 @@ private:
 	HashMap<int, Vector<ConnectionTuple>> m_connections;
 	int m_max_id = -1;
 
+	HashMap<StringName, float> m_parameters;
+
 	void _on_sub_resource_changed();
 	int _find_output_node() const;
 	HashMap<int, Vector<ConnectionTuple>> _get_inverted_connections_sorted() const;
@@ -112,6 +114,9 @@ public:
 	PackedInt32Array get_connections_for_node(int node_id) const;
 	void remove_connections_for_node(int node_id);
 	CompileResult compile();
+
+	void add_parameter(StringName name, float default_value);
+	void remove_parameter(StringName name);
 };
 
 #endif // AUDIO_STREAM_GRAPH_H
