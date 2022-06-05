@@ -21,16 +21,14 @@ public:
 
 	struct Bytecode {
 		Opcode op;
-		union Operand {
-			float f;
-			int i;
-		} operand;
+		Variant operand;
 	};
 
 	struct CompileResult {
 		bool ok = true;
 		Vector<Bytecode> bytecode;
 		Vector<Ref<AudioStream>> audio_inputs;
+		HashMap<StringName, float> parameters;
 	};
 
 private:

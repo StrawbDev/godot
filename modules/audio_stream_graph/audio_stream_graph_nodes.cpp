@@ -8,7 +8,6 @@ Vector2 AudioStreamGraphNode::get_position() const {
 
 void AudioStreamGraphNode::set_position(Vector2 position) {
 	m_position = position;
-	emit_changed();
 }
 
 void AudioStreamGraphNode::_bind_methods() {

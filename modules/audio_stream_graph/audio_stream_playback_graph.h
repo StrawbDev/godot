@@ -17,6 +17,8 @@ private:
 	int m_current_buffer = 0;
 	Buffer m_buffers[16];
 	Vector<Ref<AudioStreamPlayback>> m_input_playbacks;
+	HashMap<StringName, int> m_parameter_lookup;
+	std::atomic<float> *m_parameters = nullptr;
 
 	enum StackValueType {
 		STACK_VALUE_INVALID,
@@ -45,6 +47,9 @@ private:
 	void _op_push_const(const AudioStreamGraph::Bytecode &instruction);
 	void _op_push_param(const AudioStreamGraph::Bytecode &instruction);
 
+protected:
+	static void _bind_methods();
+
 public:
 	int get_sample_rate() const;
 
@@ -60,6 +65,9 @@ public:
 	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
 
 	void set_resource(Ref<AudioStreamGraph> resource);
+	void set_parameter(StringName parameter, float value);
+
+	~AudioStreamPlaybackGraph();
 };
 
 #endif // AUDIO_STREAM_PLAYBACK_GRAPH_H

@@ -8,6 +8,13 @@ int AudioStreamPlaybackGraph::get_sample_rate() const {
 	return 44100;
 }
 
+AudioStreamPlaybackGraph::~AudioStreamPlaybackGraph() {
+	if (m_parameters) {
+		memdelete_arr(m_parameters);
+		m_parameters = nullptr;
+	}
+}
+
 void AudioStreamPlaybackGraph::set_resource(Ref<AudioStreamGraph> resource) {
 	m_resource = resource;
 	m_program = m_resource->compile();
@@ -15,6 +22,17 @@ void AudioStreamPlaybackGraph::set_resource(Ref<AudioStreamGraph> resource) {
 		Ref<AudioStreamPlayback> playback = stream->instance_playback();
 		playback->start();
 		m_input_playbacks.push_back(playback);
+	}
+
+	if (m_parameters) {
+		memdelete_arr(m_parameters);
+	}
+	m_parameters = memnew_arr(std::atomic<float>, m_program.parameters.size());
+	int i = 0;
+	for (const KeyValue<StringName, float> &entry : m_program.parameters) {
+		m_parameter_lookup[entry.key] = i;
+		m_parameters[i] = entry.value;
+		i++;
 	}
 }
 
@@ -45,6 +63,11 @@ void AudioStreamPlaybackGraph::seek(float p_time) {
 	} else {
 		m_position = p_time * get_sample_rate();
 	}
+}
+
+void AudioStreamPlaybackGraph::set_parameter(StringName parameter, float value) {
+	int idx = m_parameter_lookup[parameter];
+	m_parameters[idx] = value;
 }
 
 void AudioStreamPlaybackGraph::_run_program(AudioFrame *buffer, float rate_scale, int num_frames) {
@@ -172,17 +195,26 @@ void AudioStreamPlaybackGraph::_op_mix(const AudioStreamGraph::Bytecode &instruc
 void AudioStreamPlaybackGraph::_op_push_audio(const AudioStreamGraph::Bytecode &instruction) {
 	StackValue ref;
 	ref.type = STACK_VALUE_AUDIO_REF;
-	ref.value.i = instruction.operand.i;
+	ref.value.i = instruction.operand;
 	m_program_stack.push_back(ref);
 }
 
 void AudioStreamPlaybackGraph::_op_push_const(const AudioStreamGraph::Bytecode &instruction) {
 	StackValue constant;
 	constant.type = STACK_VALUE_FLOAT;
-	constant.value.f = instruction.operand.f;
+	constant.value.f = instruction.operand;
 	m_program_stack.push_back(constant);
 }
 
 void AudioStreamPlaybackGraph::_op_push_param(const AudioStreamGraph::Bytecode &instruction) {
-	// TODO
+	StringName param_name = instruction.operand;
+	int param_idx = m_parameter_lookup[param_name];
+	StackValue param_value;
+	param_value.type = STACK_VALUE_FLOAT;
+	param_value.value.f = m_parameters[param_idx];
+	m_program_stack.push_back(param_value);
+}
+
+void AudioStreamPlaybackGraph::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_parameter", "parameter", "value"), &AudioStreamPlaybackGraph::set_parameter);
 }
