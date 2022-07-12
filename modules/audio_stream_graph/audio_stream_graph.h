@@ -2,6 +2,7 @@
 #define AUDIO_STREAM_GRAPH_H
 
 #include "audio_stream_graph_nodes.h"
+#include "audio_stream_graph_track_item.h"
 #include "servers/audio/audio_stream.h"
 
 class AudioStreamGraph : public AudioStream {
@@ -71,6 +72,11 @@ private:
 		}
 	};
 
+	struct Track {
+		Vector<Ref<AudioStreamGraphTrackItem>> items;
+	};
+
+	HashMap<StringName, Track> m_tracks;
 	HashMap<int, Ref<AudioStreamGraphNode>> m_nodes;
 	HashMap<int, Vector<ConnectionTuple>> m_connections;
 	int m_max_id = -1;
@@ -116,6 +122,8 @@ public:
 	void add_parameter(StringName name, float default_value);
 	void remove_parameter(StringName name);
 	PackedStringArray get_parameter_names();
+
+	void add_track(StringName name);
 };
 
 #endif // AUDIO_STREAM_GRAPH_H

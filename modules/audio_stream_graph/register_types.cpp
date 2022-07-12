@@ -1,5 +1,6 @@
 #include "register_types.h"
 #include "audio_stream_graph.h"
+#include "audio_stream_graph_track_item.h"
 #include "audio_stream_playback_graph.h"
 
 #ifdef TOOLS_ENABLED
@@ -10,6 +11,7 @@ void initialize_audio_stream_graph_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		GDREGISTER_CLASS(AudioStreamGraph);
 		GDREGISTER_CLASS(AudioStreamPlaybackGraph);
+		GDREGISTER_CLASS(AudioStreamGraphTrackItem);
 
 		GDREGISTER_ABSTRACT_CLASS(AudioStreamGraphNode);
 		GDREGISTER_CLASS(AudioStreamGraphNodeStream);

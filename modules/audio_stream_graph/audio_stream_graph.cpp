@@ -327,11 +327,17 @@ PackedStringArray AudioStreamGraph::get_parameter_names() {
 void AudioStreamGraph::_get_property_list(List<PropertyInfo> *r_props) const {
 	for (const KeyValue<int, Ref<AudioStreamGraphNode>> &entry : m_nodes) {
 		StringName name = vformat("nodes/%d", entry.key);
-		r_props->push_back(PropertyInfo(Variant::OBJECT, name, PROPERTY_HINT_RESOURCE_TYPE, "AudioStreamGraphNode", PROPERTY_USAGE_NO_EDITOR));
+		r_props->push_back(PropertyInfo(Variant::OBJECT, name, PROPERTY_HINT_RESOURCE_TYPE, "AudioStreamGraphNode"));
 	}
 	for (const KeyValue<StringName, float> &parameter : m_parameters) {
 		StringName name = vformat("parameters/%s", parameter.key);
 		r_props->push_back(PropertyInfo(Variant::FLOAT, name));
+	}
+	for (const KeyValue<StringName, Track> &track : m_tracks) {
+		String base_path = vformat("tracks/%s/", track.key);
+		for (int i = 0; i < track.value.items.size(); i++) {
+			r_props->push_back(PropertyInfo(Variant::OBJECT, vformat("%sitems/%d", base_path, i), PROPERTY_HINT_RESOURCE_TYPE, "AudioStreamTrackItem"));
+		}
 	}
 }
 
@@ -346,8 +352,16 @@ bool AudioStreamGraph::_get(const StringName &p_property, Variant &r_value) cons
 		if (m_parameters.has(param_name)) {
 			r_value = m_parameters[param_name];
 			return true;
-		} else {
-			return false;
+		}
+	} else if (name.begins_with("tracks/")) {
+		StringName track_name = name.get_slicec('/', 1);
+		int item_num = name.get_slicec('/', 2).to_int();
+		if (m_tracks.has(track_name)) {
+			const Track &track = m_tracks[track_name];
+			if (item_num >= 0 && item_num < track.items.size()) {
+				r_value = track.items[item_num];
+				return true;
+			}
 		}
 	}
 
@@ -364,6 +378,21 @@ bool AudioStreamGraph::_set(const StringName &p_property, const Variant &p_value
 		StringName param_name = name.get_slicec('/', 1);
 		m_parameters[param_name] = p_value;
 		return true;
+	} else if (name.begins_with("tracks/")) {
+		StringName track_name = name.get_slicec('/', 1);
+		int item_num = name.get_slicec('/', 2).to_int();
+		if (!m_tracks.has(track_name)) {
+			m_tracks.insert(track_name, Track());
+		} else {
+			Track &track = m_tracks[track_name];
+			if (item_num <= 0 && item_num < track.items.size()) {
+				track.items.write[item_num] = p_value;
+				return true;
+			} else if (item_num == track.items.size()) {
+				track.items.push_back(p_value);
+				return true;
+			}
+		}
 	}
 
 	return false;
