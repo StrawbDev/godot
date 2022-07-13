@@ -37,6 +37,6 @@ void AudioStreamGraphTrackItem::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "start_position"), "set_start_position", "get_start_position");
 
 	ClassDB::bind_method(D_METHOD("set_end_position", "position"), &AudioStreamGraphTrackItem::set_end_position);
-	ClassDB::bind_method(D_METHOD("get_end_position", "position"), &AudioStreamGraphTrackItem::get_end_position);
+	ClassDB::bind_method(D_METHOD("get_end_position"), &AudioStreamGraphTrackItem::get_end_position);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "end_position"), "set_end_position", "get_end_position");
 }
