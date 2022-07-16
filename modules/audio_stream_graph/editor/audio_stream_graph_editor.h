@@ -3,18 +3,20 @@
 
 #include "../audio_stream_graph.h"
 #include "audio_stream_graph_editor_nodes.h"
+#include "audio_stream_graph_track_editor.h"
 #include "core/object/undo_redo.h"
-#include "scene/gui/box_container.h"
 #include "scene/gui/graph_edit.h"
+#include "scene/gui/split_container.h"
 
-class AudioStreamGraphEditor : public VBoxContainer {
-	GDCLASS(AudioStreamGraphEditor, VBoxContainer);
+class AudioStreamGraphEditor : public VSplitContainer {
+	GDCLASS(AudioStreamGraphEditor, VSplitContainer);
 
 private:
 	UndoRedo *m_undo_redo = nullptr;
 	GraphEdit *m_graph = nullptr;
 	AudioStreamGraph *m_current_resource = nullptr;
 	Button *m_add_param_button = nullptr;
+	AudioStreamGraphTrackEditor *m_track_editor = nullptr;
 
 	void _on_connection_request(StringName from, int from_slot, StringName to, int to_slot);
 	void _on_disconnection_request(StringName from, int from_slot, StringName to, int to_slot);

@@ -1,7 +1,6 @@
 #include "audio_stream_graph_editor.h"
-#include "scene/gui/label.h"
-
 #include "audio_stream_graph_editor_nodes.h"
+#include "scene/gui/label.h"
 
 const Color AudioStreamGraphEditor::SLOT_COLOR_AUDIO = Color(1, 0, 0);
 const Color AudioStreamGraphEditor::SLOT_COLOR_CONTROL = Color(1, 1, 1);
@@ -46,6 +45,8 @@ void AudioStreamGraphEditor::_on_add_parameter_pressed() {
 }
 
 void AudioStreamGraphEditor::gui_input(const Ref<InputEvent> &p_event) {
+	VSplitContainer::gui_input(p_event);
+
 	ERR_FAIL_COND(p_event.is_null());
 	Ref<InputEventMouseButton> mouse_event = p_event;
 	if (mouse_event.is_valid() && mouse_event->get_button_index() == MouseButton::RIGHT && !mouse_event->is_pressed()) {
@@ -140,7 +141,6 @@ void AudioStreamGraphEditor::_bind_methods() {
 
 AudioStreamGraphEditor::AudioStreamGraphEditor() {
 	m_graph = memnew(GraphEdit);
-	m_graph->set_mouse_filter(MOUSE_FILTER_PASS);
 	m_graph->set_v_size_flags(SIZE_EXPAND_FILL);
 	m_graph->add_valid_right_disconnect_type(SLOT_TYPE_AUDIO);
 	m_graph->connect("connection_request", callable_mp(this, &AudioStreamGraphEditor::_on_connection_request));
@@ -151,6 +151,9 @@ AudioStreamGraphEditor::AudioStreamGraphEditor() {
 	m_add_param_button->set_text(TTR("Add Parameter"));
 	m_add_param_button->connect("pressed", callable_mp(this, &AudioStreamGraphEditor::_on_add_parameter_pressed));
 	m_graph->get_zoom_hbox()->add_child(m_add_param_button);
+
+	m_track_editor = memnew(AudioStreamGraphTrackEditor);
+	add_child(m_track_editor);
 }
 
 void AudioStreamGraphEditor::set_undo_redo(UndoRedo *undo_redo) {
