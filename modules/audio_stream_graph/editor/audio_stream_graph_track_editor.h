@@ -8,6 +8,7 @@ class AudioStreamGraphTrackEditor : public Control {
 
 private:
 	static constexpr uint64_t DEFAULT_SAMPLE_RATE = 41000;
+	static constexpr float ZOOM_SPEED = 0.1;
 
 	uint64_t m_offset = 0;
 	uint64_t m_scale = DEFAULT_SAMPLE_RATE * 10;
@@ -21,6 +22,7 @@ protected:
 	void _notification(int p_what);
 
 public:
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	AudioStreamGraphTrackEditor();
 };
 

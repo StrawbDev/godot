@@ -32,6 +32,32 @@ void AudioStreamGraphTrackEditor::_notification(int p_what) {
 	}
 }
 
+void AudioStreamGraphTrackEditor::gui_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventMouseButton> button_event = p_event;
+	if (button_event.is_valid()) {
+		float scroll_delta = button_event->get_factor();
+		if (scroll_delta == 0.0f) {
+			scroll_delta = 1.0f;
+		}
+
+		if (button_event->get_button_index() == MouseButton::WHEEL_UP) {
+			m_scale -= scroll_delta * ZOOM_SPEED * m_scale;
+			accept_event();
+		} else if (button_event->get_button_index() == MouseButton::WHEEL_DOWN) {
+			m_scale += scroll_delta * ZOOM_SPEED * m_scale;
+			accept_event();
+		}
+
+		if (m_scale > m_step_size * 20) {
+			m_step_size *= 2;
+		} else if (m_step_size > m_scale / 5) {
+			m_step_size /= 2;
+		}
+
+		update();
+	}
+}
+
 AudioStreamGraphTrackEditor::AudioStreamGraphTrackEditor() {
 	set_clip_contents(true);
 }
