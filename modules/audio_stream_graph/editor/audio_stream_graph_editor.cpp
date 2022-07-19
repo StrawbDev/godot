@@ -153,6 +153,7 @@ AudioStreamGraphEditor::AudioStreamGraphEditor() {
 	m_graph->get_zoom_hbox()->add_child(m_add_param_button);
 
 	m_track_editor = memnew(AudioStreamGraphTrackEditor);
+	m_track_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	add_child(m_track_editor);
 }
 
