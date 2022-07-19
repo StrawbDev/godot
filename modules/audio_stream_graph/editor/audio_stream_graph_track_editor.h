@@ -3,8 +3,20 @@
 
 #include "scene/gui/control.h"
 
+/////////////////////////////////
+// AudioStreamGraphTrackEditor
 class AudioStreamGraphTrackEditor : public Control {
 	GDCLASS(AudioStreamGraphTrackEditor, Control);
+
+public:
+	AudioStreamGraphTrackEditor();
+};
+
+/////////////////////////////////
+// AudioStreamGraphTimelineEditor
+
+class AudioStreamGraphTimelineEditor : public Control {
+	GDCLASS(AudioStreamGraphTimelineEditor, Control);
 
 private:
 	static constexpr uint64_t DEFAULT_SAMPLE_RATE = 41000;
@@ -26,7 +38,14 @@ protected:
 
 public:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
-	AudioStreamGraphTrackEditor();
+	AudioStreamGraphTimelineEditor();
+};
+
+///////////////////////////////////////
+// AudioStreamGraphTrackItemEditor
+
+class AudioStreamGraphTrackItemEditor : public Control {
+	GDCLASS(AudioStreamGraphTrackItemEditor, Control);
 };
 
 #endif // AUDIO_STREAM_GRAPH_TRACK_EDITOR_H

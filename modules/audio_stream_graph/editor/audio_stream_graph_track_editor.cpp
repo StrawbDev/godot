@@ -1,17 +1,29 @@
 #include "audio_stream_graph_track_editor.h"
 
-float AudioStreamGraphTrackEditor::sample_space_to_control_space(uint64_t sample_position) const {
+///////////////////////////////////
+// AudioStreamGraphTrackEditor
+
+AudioStreamGraphTrackEditor::AudioStreamGraphTrackEditor() {
+	AudioStreamGraphTimelineEditor *temp = memnew(AudioStreamGraphTimelineEditor);
+	temp->set_anchors_preset(LayoutPreset::PRESET_WIDE);
+	add_child(temp);
+}
+
+///////////////////////////////////
+// AudioStreamGraphTimelineEditor
+
+float AudioStreamGraphTimelineEditor::sample_space_to_control_space(uint64_t sample_position) const {
 	ERR_FAIL_COND_V(m_offset > sample_position, 0);
 	float units_per_sample = get_size().x / m_scale;
 	return (sample_position - m_offset) * units_per_sample;
 }
 
-uint64_t AudioStreamGraphTrackEditor::control_space_to_sample_space(float control_position) const {
+uint64_t AudioStreamGraphTimelineEditor::control_space_to_sample_space(float control_position) const {
 	float units_per_sample = get_size().x / m_scale;
 	return (control_position / units_per_sample) + m_offset;
 }
 
-void AudioStreamGraphTrackEditor::_notification(int p_what) {
+void AudioStreamGraphTimelineEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW:
 			Ref<Font> default_font = get_theme_default_font();
@@ -33,7 +45,7 @@ void AudioStreamGraphTrackEditor::_notification(int p_what) {
 	}
 }
 
-void AudioStreamGraphTrackEditor::gui_input(const Ref<InputEvent> &p_event) {
+void AudioStreamGraphTimelineEditor::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> button_event = p_event;
 	if (button_event.is_valid()) {
 		float scroll_delta = button_event->get_factor();
@@ -49,6 +61,8 @@ void AudioStreamGraphTrackEditor::gui_input(const Ref<InputEvent> &p_event) {
 		} else if (button_event->get_button_index() == MouseButton::WHEEL_DOWN) {
 			m_scale += scroll_delta * ZOOM_SPEED * m_scale;
 			accept_event();
+		} else if (button_event->get_button_index() == MouseButton::RIGHT) {
+			// TODO
 		}
 
 		if (m_scale > m_step_size * 20) {
@@ -78,6 +92,9 @@ void AudioStreamGraphTrackEditor::gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-AudioStreamGraphTrackEditor::AudioStreamGraphTrackEditor() {
+AudioStreamGraphTimelineEditor::AudioStreamGraphTimelineEditor() {
 	set_clip_contents(true);
 }
+
+/////////////////////////////////////
+// AudioStreamGraphTrackItemEditor
