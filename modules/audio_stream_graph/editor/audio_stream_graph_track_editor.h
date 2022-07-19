@@ -9,11 +9,14 @@ class AudioStreamGraphTrackEditor : public Control {
 private:
 	static constexpr uint64_t DEFAULT_SAMPLE_RATE = 41000;
 	static constexpr float ZOOM_SPEED = 0.1;
+	static constexpr float PAN_SPEED = 0.001;
 
 	uint64_t m_offset = 0;
 	uint64_t m_scale = DEFAULT_SAMPLE_RATE * 10;
 	uint64_t m_step_size = DEFAULT_SAMPLE_RATE;
 	uint64_t m_sample_rate = DEFAULT_SAMPLE_RATE;
+
+	bool m_dragging = false;
 
 	float sample_space_to_control_space(uint64_t sample_position) const;
 	uint64_t control_space_to_sample_space(float control_position) const;

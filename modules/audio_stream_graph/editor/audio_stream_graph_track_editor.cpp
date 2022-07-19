@@ -1,6 +1,7 @@
 #include "audio_stream_graph_track_editor.h"
 
 float AudioStreamGraphTrackEditor::sample_space_to_control_space(uint64_t sample_position) const {
+	ERR_FAIL_COND_V(m_offset > sample_position, 0);
 	float units_per_sample = get_size().x / m_scale;
 	return (sample_position - m_offset) * units_per_sample;
 }
@@ -17,7 +18,7 @@ void AudioStreamGraphTrackEditor::_notification(int p_what) {
 			float baseline = default_font->get_ascent(get_theme_default_font_size());
 
 			uint64_t zero_align = m_offset % m_step_size == 0 ? 0 : 1;
-			uint64_t value = (m_offset / m_step_size) + zero_align;
+			uint64_t value = m_step_size * ((m_offset / m_step_size) + zero_align);
 			while (true) {
 				float draw_pos = sample_space_to_control_space(value);
 				String string_value = vformat("%0.1f", float(value) / m_sample_rate);
@@ -40,7 +41,9 @@ void AudioStreamGraphTrackEditor::gui_input(const Ref<InputEvent> &p_event) {
 			scroll_delta = 1.0f;
 		}
 
-		if (button_event->get_button_index() == MouseButton::WHEEL_UP) {
+		if (button_event->get_button_index() == MouseButton::MIDDLE) {
+			m_dragging = button_event->is_pressed();
+		} else if (button_event->get_button_index() == MouseButton::WHEEL_UP) {
 			m_scale -= scroll_delta * ZOOM_SPEED * m_scale;
 			accept_event();
 		} else if (button_event->get_button_index() == MouseButton::WHEEL_DOWN) {
@@ -55,6 +58,23 @@ void AudioStreamGraphTrackEditor::gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		update();
+	}
+
+	Ref<InputEventMouseMotion> motion_event = p_event;
+	if (motion_event.is_valid()) {
+		if (m_dragging) {
+			int dir = SIGN(-motion_event->get_relative().x);
+			uint64_t delta = control_space_to_sample_space(Math::abs(motion_event->get_relative().x));
+			delta -= MIN(delta, m_offset);
+			if (dir == -1) {
+				delta = MIN(delta, m_offset);
+				m_offset -= delta;
+			} else {
+				m_offset += delta;
+			}
+			accept_event();
+			update();
+		}
 	}
 }
 
