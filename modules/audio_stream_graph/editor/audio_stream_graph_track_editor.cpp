@@ -1,4 +1,5 @@
 #include "audio_stream_graph_track_editor.h"
+#include "scene/gui/label.h"
 
 ///////////////////////////////////
 // AudioStreamGraphTrackEditor
@@ -62,7 +63,11 @@ void AudioStreamGraphTimelineEditor::gui_input(const Ref<InputEvent> &p_event) {
 			m_scale += scroll_delta * ZOOM_SPEED * m_scale;
 			accept_event();
 		} else if (button_event->get_button_index() == MouseButton::RIGHT) {
-			// TODO
+			if (button_event->is_pressed()) {
+				AudioStreamGraphTrackItemEditor *test = memnew(AudioStreamGraphTrackItemEditor());
+				test->set_size(Size2(200, 70));
+				add_child(test);
+			}
 		}
 
 		if (m_scale > m_step_size * 20) {
@@ -98,3 +103,63 @@ AudioStreamGraphTimelineEditor::AudioStreamGraphTimelineEditor() {
 
 /////////////////////////////////////
 // AudioStreamGraphTrackItemEditor
+
+void AudioStreamGraphTrackItemEditor::gui_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventMouseMotion> motion_event = p_event;
+	if (motion_event.is_valid()) {
+		switch (m_resize_side) {
+			case ResizeSide::Right: {
+				real_t y_size = get_size().y;
+				set_size(Size2(motion_event->get_position().x, y_size));
+			} break;
+
+			case ResizeSide::None:
+				if (m_drag_point != Point2(-1, -1)) {
+					set_global_position(motion_event->get_global_position() - m_drag_point);
+				}
+				break;
+		}
+	}
+
+	Ref<InputEventMouseButton> button_event = p_event;
+	if (button_event.is_valid()) {
+		if (button_event->get_button_index() == MouseButton::LEFT) {
+			if (button_event->is_pressed()) {
+				m_resize_side = is_inside_resize_deadzone(button_event->get_position());
+				if (m_resize_side == ResizeSide::None) {
+					m_drag_point = button_event->get_position();
+				}
+			} else {
+				m_resize_side = ResizeSide::None;
+				m_drag_point = Vector2(-1, -1);
+			}
+		}
+	}
+}
+
+AudioStreamGraphTrackItemEditor::ResizeSide AudioStreamGraphTrackItemEditor::is_inside_resize_deadzone(Point2 point) const {
+	if (point.x < RESIZE_DEADZONE) {
+		return ResizeSide::Left;
+	} else if (point.x > get_size().x - RESIZE_DEADZONE) {
+		return ResizeSide::Right;
+	} else {
+		return ResizeSide::None;
+	}
+}
+
+Control::CursorShape AudioStreamGraphTrackItemEditor::get_cursor_shape(const Point2 &p_pos) const {
+	if (is_inside_resize_deadzone(p_pos) != ResizeSide::None) {
+		return CURSOR_HSIZE;
+	} else {
+		return CURSOR_ARROW;
+	}
+}
+
+AudioStreamGraphTrackItemEditor::AudioStreamGraphTrackItemEditor() {
+	Ref<StyleBoxFlat> panel = memnew(StyleBoxFlat);
+	panel->set_bg_color(Color("red"));
+	add_theme_style_override(SNAME("panel"), panel);
+	Label *test = memnew(Label);
+	test->set_text("Test Item");
+	add_child(test);
+}

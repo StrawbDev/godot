@@ -2,6 +2,7 @@
 #define AUDIO_STREAM_GRAPH_TRACK_EDITOR_H
 
 #include "scene/gui/control.h"
+#include "scene/gui/panel_container.h"
 
 /////////////////////////////////
 // AudioStreamGraphTrackEditor
@@ -44,8 +45,26 @@ public:
 ///////////////////////////////////////
 // AudioStreamGraphTrackItemEditor
 
-class AudioStreamGraphTrackItemEditor : public Control {
-	GDCLASS(AudioStreamGraphTrackItemEditor, Control);
+class AudioStreamGraphTrackItemEditor : public PanelContainer {
+	GDCLASS(AudioStreamGraphTrackItemEditor, PanelContainer);
+
+private:
+	constexpr static int RESIZE_DEADZONE = 20;
+	enum class ResizeSide {
+		None,
+		Left,
+		Right
+	};
+
+	ResizeSide m_resize_side;
+	Point2 m_drag_point = Vector2(-1, -1);
+
+	ResizeSide is_inside_resize_deadzone(Point2 point) const;
+
+public:
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
+	AudioStreamGraphTrackItemEditor();
 };
 
 #endif // AUDIO_STREAM_GRAPH_TRACK_EDITOR_H
