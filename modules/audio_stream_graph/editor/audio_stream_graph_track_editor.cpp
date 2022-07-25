@@ -13,13 +13,13 @@ AudioStreamGraphTrackEditor::AudioStreamGraphTrackEditor() {
 ///////////////////////////////////
 // AudioStreamGraphTimelineEditor
 
-float AudioStreamGraphTimelineEditor::sample_space_to_control_space(uint64_t sample_position) const {
+float AudioStreamGraphTimelineEditor::sample_space_to_control_space(int64_t sample_position) const {
 	ERR_FAIL_COND_V(m_offset > sample_position, 0);
 	float units_per_sample = get_size().x / m_scale;
 	return (sample_position - m_offset) * units_per_sample;
 }
 
-uint64_t AudioStreamGraphTimelineEditor::control_space_to_sample_space(float control_position) const {
+int64_t AudioStreamGraphTimelineEditor::control_space_to_sample_space(float control_position) const {
 	float units_per_sample = get_size().x / m_scale;
 	return (control_position / units_per_sample) + m_offset;
 }
@@ -83,7 +83,7 @@ void AudioStreamGraphTimelineEditor::gui_input(const Ref<InputEvent> &p_event) {
 	if (motion_event.is_valid()) {
 		if (m_dragging) {
 			int dir = SIGN(-motion_event->get_relative().x);
-			uint64_t delta = control_space_to_sample_space(Math::abs(motion_event->get_relative().x));
+			int64_t delta = control_space_to_sample_space(Math::abs(motion_event->get_relative().x));
 			delta -= MIN(delta, m_offset);
 			if (dir == -1) {
 				delta = MIN(delta, m_offset);
@@ -153,6 +153,14 @@ Control::CursorShape AudioStreamGraphTrackItemEditor::get_cursor_shape(const Poi
 	} else {
 		return CURSOR_ARROW;
 	}
+}
+
+void AudioStreamGraphTrackItemEditor::set_track_item(Ref<AudioStreamGraphTrackItem> track_item) {
+	m_track_item = track_item;
+}
+
+AudioStreamGraphTimelineEditor *AudioStreamGraphTrackItemEditor::get_timeline() {
+	return Object::cast_to<AudioStreamGraphTimelineEditor>(get_parent());
 }
 
 AudioStreamGraphTrackItemEditor::AudioStreamGraphTrackItemEditor() {

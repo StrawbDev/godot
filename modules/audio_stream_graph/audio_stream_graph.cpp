@@ -324,6 +324,19 @@ PackedStringArray AudioStreamGraph::get_parameter_names() {
 	return result;
 }
 
+void AudioStreamGraph::add_track(StringName name) {
+	if (!m_tracks.has(name)) {
+		m_tracks.insert(name, Track());
+	}
+}
+
+Ref<AudioStreamGraphTrackItem> AudioStreamGraph::add_new_item_to_track(StringName track_name) {
+	ERR_FAIL_COND_V(m_tracks.has(track_name), nullptr);
+	Ref<AudioStreamGraphTrackItem> new_item = memnew(AudioStreamGraphTrackItem);
+	m_tracks[track_name].items.append(new_item);
+	return new_item;
+}
+
 void AudioStreamGraph::_get_property_list(List<PropertyInfo> *r_props) const {
 	for (const KeyValue<int, Ref<AudioStreamGraphNode>> &entry : m_nodes) {
 		StringName name = vformat("nodes/%d", entry.key);
