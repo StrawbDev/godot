@@ -124,7 +124,8 @@ public:
 	PackedStringArray get_parameter_names();
 
 	void add_track(StringName name);
-	Ref<AudioStreamGraphTrackItem> add_new_item_to_track(StringName track_name);
+	void add_item_to_track(StringName track_name, Ref<AudioStreamGraphTrackItem> item);
+	void remove_item_from_track(Ref<AudioStreamGraphTrackItem> item);
 };
 
 #endif // AUDIO_STREAM_GRAPH_H

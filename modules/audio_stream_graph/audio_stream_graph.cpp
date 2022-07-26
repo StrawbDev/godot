@@ -330,11 +330,19 @@ void AudioStreamGraph::add_track(StringName name) {
 	}
 }
 
-Ref<AudioStreamGraphTrackItem> AudioStreamGraph::add_new_item_to_track(StringName track_name) {
-	ERR_FAIL_COND_V(m_tracks.has(track_name), nullptr);
-	Ref<AudioStreamGraphTrackItem> new_item = memnew(AudioStreamGraphTrackItem);
-	m_tracks[track_name].items.append(new_item);
-	return new_item;
+void AudioStreamGraph::add_item_to_track(StringName track_name, Ref<AudioStreamGraphTrackItem> item) {
+	ERR_FAIL_COND(!m_tracks.has(track_name));
+	m_tracks[track_name].items.append(item);
+}
+
+void AudioStreamGraph::remove_item_from_track(Ref<AudioStreamGraphTrackItem> item) {
+	for (KeyValue<StringName, Track> &track : m_tracks) {
+		int idx = track.value.items.find(item);
+		if (idx != -1) {
+			track.value.items.remove_at(idx);
+			break;
+		}
+	}
 }
 
 void AudioStreamGraph::_get_property_list(List<PropertyInfo> *r_props) const {
@@ -427,4 +435,7 @@ void AudioStreamGraph::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_parameter", "name", "default_value"), &AudioStreamGraph::add_parameter);
 	ClassDB::bind_method(D_METHOD("remove_parameter", "name"), &AudioStreamGraph::remove_parameter);
+
+	ClassDB::bind_method(D_METHOD("add_item_to_track", "track_name", "item"), &AudioStreamGraph::add_item_to_track);
+	ClassDB::bind_method(D_METHOD("remove_item_from_track", "item"), &AudioStreamGraph::remove_item_from_track);
 }

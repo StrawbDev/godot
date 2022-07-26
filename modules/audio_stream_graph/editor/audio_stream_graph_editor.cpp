@@ -114,6 +114,8 @@ void AudioStreamGraphEditor::edit(AudioStreamGraph *resource) {
 			m_graph->connect_node(from_node, tuple[0], to_node, tuple[2]);
 		}
 	}
+
+	m_track_editor->edit(resource);
 }
 
 void AudioStreamGraphEditor::add_editor_node(AudioStreamGraphEditorNode *editor_node) {
@@ -159,4 +161,5 @@ AudioStreamGraphEditor::AudioStreamGraphEditor() {
 
 void AudioStreamGraphEditor::set_undo_redo(UndoRedo *undo_redo) {
 	m_undo_redo = undo_redo;
+	m_track_editor->set_undo_redo(undo_redo);
 }

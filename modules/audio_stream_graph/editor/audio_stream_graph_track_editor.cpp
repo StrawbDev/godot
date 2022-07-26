@@ -5,13 +5,29 @@
 // AudioStreamGraphTrackEditor
 
 AudioStreamGraphTrackEditor::AudioStreamGraphTrackEditor() {
-	AudioStreamGraphTimelineEditor *temp = memnew(AudioStreamGraphTimelineEditor);
-	temp->set_anchors_preset(LayoutPreset::PRESET_WIDE);
-	add_child(temp);
+	m_timeline_editor = memnew(AudioStreamGraphTimelineEditor);
+	m_timeline_editor->set_anchors_preset(LayoutPreset::PRESET_WIDE);
+	add_child(m_timeline_editor);
+}
+
+void AudioStreamGraphTrackEditor::edit(AudioStreamGraph *resource) {
+	m_timeline_editor->edit(resource);
+}
+
+void AudioStreamGraphTrackEditor::set_undo_redo(UndoRedo *undo_redo) {
+	m_timeline_editor->set_undo_redo(undo_redo);
 }
 
 ///////////////////////////////////
 // AudioStreamGraphTimelineEditor
+
+void AudioStreamGraphTimelineEditor::edit(AudioStreamGraph *resource) {
+	m_current_resource = resource;
+}
+
+void AudioStreamGraphTimelineEditor::set_undo_redo(UndoRedo *undo_redo) {
+	m_undo_redo = undo_redo;
+}
 
 float AudioStreamGraphTimelineEditor::sample_space_to_control_space(int64_t sample_position) const {
 	ERR_FAIL_COND_V(m_offset > sample_position, 0);
@@ -46,6 +62,22 @@ void AudioStreamGraphTimelineEditor::_notification(int p_what) {
 	}
 }
 
+void AudioStreamGraphTimelineEditor::add_timeline_item() {
+	m_current_resource->add_track("TestTrack");
+	Ref<AudioStreamGraphTrackItem> item = memnew(AudioStreamGraphTrackItem);
+	AudioStreamGraphTrackItemEditor *item_edit = memnew(AudioStreamGraphTrackItemEditor());
+	item_edit->set_size(Size2(200, 70));
+	item_edit->set_track_item(item);
+
+	m_undo_redo->create_action(TTR("Add track item"));
+	m_undo_redo->add_do_method(m_current_resource, "add_item_to_track", "TestTrack", item);
+	m_undo_redo->add_undo_method(m_current_resource, "remove_item_from_track", item);
+	m_undo_redo->add_do_reference(item_edit);
+	m_undo_redo->add_do_method(this, "add_child", item_edit);
+	m_undo_redo->add_undo_method(this, "remove_child", item_edit);
+	m_undo_redo->commit_action();
+}
+
 void AudioStreamGraphTimelineEditor::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> button_event = p_event;
 	if (button_event.is_valid()) {
@@ -63,10 +95,8 @@ void AudioStreamGraphTimelineEditor::gui_input(const Ref<InputEvent> &p_event) {
 			m_scale += scroll_delta * ZOOM_SPEED * m_scale;
 			accept_event();
 		} else if (button_event->get_button_index() == MouseButton::RIGHT) {
-			if (button_event->is_pressed()) {
-				AudioStreamGraphTrackItemEditor *test = memnew(AudioStreamGraphTrackItemEditor());
-				test->set_size(Size2(200, 70));
-				add_child(test);
+			if (button_event->is_pressed() && m_current_resource) {
+				add_timeline_item();
 			}
 		}
 
